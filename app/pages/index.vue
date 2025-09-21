@@ -1,18 +1,14 @@
-<template>
-  <!-- Página de redirecionamento - não exibe conteúdo visual -->
-</template>
-
 <script setup lang="ts">
+// Configuração da página - deve estar no topo
+definePageMeta({
+  layout: 'admin'
+})
+
 // Composables necessários
 import { useAuth } from '~/composables/core/useAuth'
 
 const { user } = useAuth()
 const router = useRouter()
-
-// Configuração da página
-definePageMeta({
-  layout: false // Remove layout para redirecionamento mais rápido
-})
 
 // Lógica de redirecionamento baseada no status de autenticação
 onMounted(async () => {
@@ -20,8 +16,8 @@ onMounted(async () => {
   await nextTick()
   
   if (user.value) {
-    // Usuário autenticado - redireciona para admin
-    await router.push('/admin')
+    // Usuário autenticado - redireciona para dashboard administrativo
+    await router.push('/admin/dashboard')
   } else {
     // Usuário não autenticado - redireciona para login
     await router.push('/auth/section?form=login')
@@ -31,11 +27,23 @@ onMounted(async () => {
 // Observa mudanças no estado de autenticação para redirecionamento dinâmico
 watch(user, async (newUser) => {
   if (newUser) {
-    // Usuário fez login - redireciona para admin
-    await router.push('/admin')
+    // Usuário fez login - redireciona para dashboard administrativo
+    await router.push('/admin/dashboard')
   } else {
     // Usuário fez logout - redireciona para login
     await router.push('/auth/section?form=login')
   }
 }, { immediate: false })
 </script>
+
+<template>
+  <NuxtLayout>
+    <!-- Página de redirecionamento - exibe loading durante redirecionamento -->
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-2 text-muted-foreground">Carregando...</p>
+      </div>
+    </div>
+  </NuxtLayout>
+</template>

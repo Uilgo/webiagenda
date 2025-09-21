@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { AuthError } from '@supabase/supabase-js'
-import type { LoginCredentials, AuthResponse } from '../../features/auth/types/auth'
+import type { LoginCredentials, AuthResponse, User } from '../../features/auth/types/auth'
 
 /**
  * Composable para gerenciamento de autenticação usando Supabase
@@ -9,7 +9,7 @@ import type { LoginCredentials, AuthResponse } from '../../features/auth/types/a
 export const useAuth = () => {
   // Cliente Supabase e usuário reativo
   const supabase = useSupabaseClient()
-  const user = useSupabaseUser()
+  const supabaseUser = useSupabaseUser()
   const router = useRouter()
 
   // Estados reativos para controle de loading e erros
@@ -17,9 +17,17 @@ export const useAuth = () => {
   const error = ref<string | null>(null)
 
   // Computed para verificar se o usuário está autenticado
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!supabaseUser.value)
 
-  // Computed para obter dados do usuário de forma segura
+  // Computed para obter dados do usuário de forma segura com tipagem customizada
+  const user = computed((): User | null => {
+    if (!supabaseUser.value) return null
+    
+    // Retorna o usuário do Supabase com tipagem customizada
+    return supabaseUser.value as User
+  })
+
+  // Computed para obter dados do usuário de forma segura (mantido para compatibilidade)
   const currentUser = computed(() => user.value)
 
   /**
@@ -56,8 +64,8 @@ export const useAuth = () => {
       }
 
       if (data.user) {
-        // Login bem-sucedido - redireciona para página inicial
-        await router.push('/')
+        // Login bem-sucedido - redireciona para dashboard administrativo
+        await router.push('/admin/dashboard')
         
         return {
           success: true,
@@ -145,7 +153,7 @@ export const useAuth = () => {
   // Retorna todas as funcionalidades e estados do composable
   return {
     // Estados reativos
-    user: currentUser,
+    user,
     isAuthenticated,
     isLoading: readonly(isLoading),
     error: readonly(error),

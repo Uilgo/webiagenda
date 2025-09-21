@@ -92,7 +92,7 @@
     </div>
 
     <!-- Coluna Direita - Formulários -->
-    <div class="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950">
+    <div class="flex-1 lg:w-1/2 flex items-center justify-center p-8 bg-card">
       <div class="w-full max-w-md space-y-6">
         <!-- Cabeçalho Mobile (visível apenas em telas pequenas) -->
         <div class="lg:hidden text-center mb-8">

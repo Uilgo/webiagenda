@@ -1,3 +1,8 @@
+<script setup lang="ts">
+// Redirecionamento automático para o dashboard
+await navigateTo('/admin/dashboard')
+</script>
+
 <template>
-  <h1 class="text-2xl font-bold">Admin - Em desenvolvimento</h1>
+  <!-- Esta página redireciona automaticamente para o dashboard -->
 </template>

@@ -40,7 +40,7 @@
             name="rememberMe"
             v-model="form.rememberMe"
             type="checkbox"
-            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+            class="h-4 w-4 text-primary focus:ring-primary border-border rounded"
             :disabled="isFormLoading"
           />
           <span class="ml-2 text-sm text-muted-foreground">Lembrar de mim</span>
