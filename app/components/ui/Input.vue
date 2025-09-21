@@ -176,6 +176,7 @@ const togglePasswordVisibility = (): void => {
 // Classes base do input
 const baseClasses = [
   'block w-full border rounded-md shadow-sm',
+  'bg-background text-foreground',
   'placeholder-muted-foreground',
   'focus:outline-none focus:ring-2 focus:ring-offset-0',
   'transition-all duration-200',
@@ -200,8 +201,9 @@ const stateClasses = computed(() => {
   }
   
   return [
-    'border-input text-foreground',
-    'focus:border-primary focus:ring-primary'
+    'border-input',
+    'hover:border-border',
+    'focus:border-ring focus:ring-ring'
   ]
 })
 
