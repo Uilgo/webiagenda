@@ -3,20 +3,14 @@
 </template>
 
 <script setup lang="ts">
-// Importações explícitas do Nuxt para resolver problemas de TypeScript
-import { useSeoMeta } from '#app'
+import AuthPage from '~/features/auth/AuthPage.vue'
 
-// Importação do componente principal da feature de autenticação
-import AuthPage from '../features/auth/AuthPage.vue'
-
-// Configuração da página
 definePageMeta({
-  layout: false, // Remove o layout padrão para ter controle total sobre o design
+  layout: false,
   title: 'Autenticação - WebAgenda',
   description: 'Faça login ou cadastre-se no WebAgenda para gerenciar seus agendamentos'
 })
 
-// SEO e meta tags
 useSeoMeta({
   title: 'Autenticação - WebAgenda',
   description: 'Acesse sua conta no WebAgenda ou crie uma nova conta para começar a gerenciar seus agendamentos de forma eficiente.',

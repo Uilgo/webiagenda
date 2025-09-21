@@ -175,7 +175,7 @@ const shouldShowErrors = computed(() => {
 
 // Estado do countdown para reenvio
 const resendCountdown = ref(0)
-const resendTimer = ref<number | null>(null)
+const resendTimer = ref<NodeJS.Timeout | null>(null)
 
 // Computed para verificar se pode reenviar
 const canResend = computed(() => resendCountdown.value === 0)

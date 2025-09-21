@@ -12,7 +12,7 @@
         <!-- Logo/Título do Sistema -->
         <div class="mb-8">
           <h1 class="text-4xl font-bold text-foreground mb-4">
-            WebAgenda
+            WebiAgenda
           </h1>
           <p class="text-xl text-muted-foreground">
             Sua plataforma completa de agendamento
@@ -140,13 +140,16 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import {
   CalendarIcon,
   UsersIcon,
   ChartBarIcon,
   BellIcon
 } from '@heroicons/vue/24/outline'
+
+// Importação dos composables
+import { useAuth } from '../../composables/core/useAuth'
+import { useRouter, useRoute } from '#app'
 
 // Importação dos componentes
 import ThemeToggle from '../../components/ui/ThemeToggle.vue'
@@ -179,58 +182,84 @@ interface ForgotPasswordData {
 const route = useRoute()
 const router = useRouter()
 
+// Composable de autenticação
+const { isAuthenticated } = useAuth()
+
 // Estado reativo do formulário atual
 const currentForm = ref<AuthFormType>('login')
 
+// Flag para controlar initial load e evitar loops
+const isInitialLoad = ref(true)
+
+// Valid forms para fallback
+const validForms = ['login', 'signup', 'forgot-password'] as const
+
 // Função para alternar entre formulários
-const switchToForm = (formType: AuthFormType) => {
+const switchToForm = async (formType: AuthFormType) => {
+  // Só atualiza se for diferente do formulário atual
+  if (currentForm.value === formType) {
+    return
+  }
+  
   currentForm.value = formType
   
-  // Atualiza a URL sem recarregar a página
-  router.push({ 
-    path: route.path, 
-    query: { ...route.query, form: formType } 
-  })
+  // Atualiza a URL usando query parameters apenas se necessário
+  const targetQuery = { form: formType }
+  if (route.query.form !== formType) {
+    await router.push({ path: '/auth/section', query: targetQuery })
+  }
 }
 
-// Observa mudanças na query da URL para sincronizar o formulário
+// Observa mudanças na query da rota para sincronizar o formulário
 watch(
   () => route.query.form,
   (newForm) => {
     if (newForm && ['login', 'signup', 'forgot-password'].includes(newForm as string)) {
-      currentForm.value = newForm as AuthFormType
+      // Só atualiza se for diferente do formulário atual para evitar loops
+      if (currentForm.value !== newForm) {
+        currentForm.value = newForm as AuthFormType
+      }
+    } else if (!newForm && route.path === '/auth/section') {
+      // Se não há query form e estamos na rota /auth/section, redireciona para /auth/section?form=login
+      console.log('🔄 Redirecionando para /auth/section?form=login')
+      if (currentForm.value !== 'login') {
+        router.replace('/auth/section?form=login')
+      }
     }
   },
   { immediate: true }
 )
 
-// Inicialização do componente
+// Inicialização do formulário baseado na query da rota
 onMounted(() => {
-  // Define o formulário inicial baseado na query da URL
-  const formFromQuery = route.query.form as AuthFormType
-  if (formFromQuery && ['login', 'signup', 'forgot-password'].includes(formFromQuery)) {
-    currentForm.value = formFromQuery
+  const formParam = route.query.form as string
+  
+  if (formParam && ['login', 'signup', 'forgot-password'].includes(formParam)) {
+    currentForm.value = formParam as AuthFormType
   } else {
-    // Se não há query ou é inválida, define como login e atualiza a URL
-    currentForm.value = 'login'
-    router.replace({ 
-      path: route.path, 
-      query: { ...route.query, form: 'login' } 
-    })
+    // Se não há query form válida, redireciona para /auth/section?form=login
+    router.replace('/auth/section?form=login')
   }
+  
+  isInitialLoad.value = false
 })
+
+// Observa mudanças no estado de autenticação para redirecionar quando necessário
+watch(isAuthenticated, (authenticated) => {
+  if (authenticated && route.path.startsWith('/auth')) {
+    // Usuário autenticado - redireciona para página inicial apenas se em página de auth
+    // Adiciona guard para evitar múltiplos pushes durante flow
+    if (!isInitialLoad.value) {
+      router.push('/')
+    }
+  }
+}, { immediate: false }) // immediate: false para evitar execução na inicialização
 
 // Handlers para os formulários
 const handleLogin = async (data: LoginData) => {
-  try {
-    console.log('Login data:', data)
-    // TODO: Implementar lógica de login
-    // await authStore.login(data)
-    // router.push('/dashboard')
-  } catch (error) {
-    console.error('Erro no login:', error)
-    // TODO: Mostrar toast de erro
-  }
+  // O LoginForm agora gerencia o login diretamente através do composable useAuth
+  // Este handler é mantido para compatibilidade, mas a lógica real está no LoginForm
+  console.log('Login iniciado via AuthPage:', data)
 }
 
 const handleSignup = async (data: SignupData) => {

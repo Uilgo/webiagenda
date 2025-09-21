@@ -12,7 +12,7 @@
         label="E-mail"
         placeholder="Digite seu e-mail"
         :error-message="shouldShowErrors ? errors.email : undefined"
-        :disabled="loading"
+        :disabled="isFormLoading"
         required
         autocomplete="email"
         @blur="handleFieldBlur('email')"
@@ -25,7 +25,7 @@
         label="Senha"
         placeholder="Digite sua senha"
         :error-message="shouldShowErrors ? errors.password : undefined"
-        :disabled="loading"
+        :disabled="isFormLoading"
         required
         autocomplete="current-password"
         :show-password-toggle="true"
@@ -36,10 +36,12 @@
       <div class="flex items-center justify-between">
         <label class="flex items-center">
           <input
+            id="remember-me"
+            name="rememberMe"
             v-model="form.rememberMe"
             type="checkbox"
             class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-            :disabled="loading"
+            :disabled="isFormLoading"
           />
           <span class="ml-2 text-sm text-muted-foreground">Lembrar de mim</span>
         </label>
@@ -48,7 +50,7 @@
           type="button"
           class="text-sm text-primary hover:text-primary-600 focus:outline-none focus:underline"
           @click="$emit('forgot-password')"
-          :disabled="loading"
+          :disabled="isFormLoading"
         >
           Esqueceu a senha?
         </button>
@@ -64,11 +66,11 @@
         type="submit"
         variant="primary"
         size="md"
-        :loading="loading"
-        :disabled="!isFormValid || loading"
+        :loading="isFormLoading"
+        :disabled="!isFormValid || isFormLoading"
         full-width
       >
-        {{ loading ? 'Entrando...' : 'Entrar' }}
+        {{ isFormLoading ? 'Entrando...' : 'Entrar' }}
       </Button>
 
       <!-- Link para cadastro -->
@@ -79,7 +81,7 @@
             type="button"
             class="text-primary hover:text-primary-600 focus:outline-none focus:underline font-medium"
             @click="$emit('switch-to-signup')"
-            :disabled="loading"
+            :disabled="isFormLoading"
           >
             Cadastre-se aqui
           </button>
@@ -91,6 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
+import { useAuth } from '../../../composables/core/useAuth'
 import Card from '../../../components/ui/Card.vue'
 import Input from '../../../components/ui/Input.vue'
 import Button from '../../../components/ui/Button.vue'
@@ -126,6 +129,9 @@ const emit = defineEmits<{
   'switch-to-signup': []
 }>()
 
+// Composable de autenticação
+const { login, isLoading, error: authError, clearError } = useAuth()
+
 // Estado reativo do formulário
 const form = reactive<LoginForm>({
   email: '',
@@ -143,6 +149,16 @@ const touchedFields = ref<Set<string>>(new Set())
 // Computed para determinar se deve mostrar erros
 const shouldShowErrors = computed(() => {
   return hasUserInteracted.value || touchedFields.value.size > 0
+})
+
+// Computed para verificar se está carregando (props ou composable)
+const isFormLoading = computed(() => {
+  return props.loading || isLoading.value
+})
+
+// Computed para erro geral (props ou composable)
+const generalError = computed(() => {
+  return props.generalError || authError.value
 })
 
 // Função de validação do email
@@ -187,11 +203,25 @@ const isFormValid = computed(() => {
 })
 
 // Handler do submit do formulário
-const handleSubmit = (): void => {
+const handleSubmit = async (): Promise<void> => {
   hasUserInteracted.value = true
   validateForm()
   
   if (isFormValid.value) {
+    // Limpa erros anteriores
+    clearError()
+    
+    // Executa o login usando o composable
+    const result = await login({
+      email: form.email,
+      password: form.password,
+      rememberMe: form.rememberMe
+    })
+    
+    // Se o login falhou, o erro já está sendo exibido pelo composable
+    // Se teve sucesso, o redirecionamento já foi feito pelo composable
+    
+    // Emite o evento para compatibilidade com componentes pais (se necessário)
     emit('submit', { ...form })
   }
 }
