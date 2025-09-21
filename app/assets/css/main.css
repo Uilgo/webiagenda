@@ -1,0 +1,464 @@
+/* Importação da fonte Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados do Vue Toastification integrados com Tailwind */
+@layer components {
+  /* Container principal dos toasts */
+  .Vue-Toastification__container {
+    @apply z-50;
+  }
+
+  /* Estilos base do toast */
+  .Vue-Toastification__toast {
+    @apply rounded-lg shadow-lg border backdrop-blur-sm;
+    @apply min-h-[64px] p-4;
+    @apply font-medium text-sm;
+  }
+
+  /* Toast de sucesso */
+  .Vue-Toastification__toast--success {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+
+  /* Toast de erro */
+  .Vue-Toastification__toast--error {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+
+  /* Toast de aviso */
+  .Vue-Toastification__toast--warning {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+  }
+
+  /* Toast informativo */
+  .Vue-Toastification__toast--info {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+  }
+
+  /* Toast padrão */
+  .Vue-Toastification__toast--default {
+    @apply bg-gray-50 border-gray-200 text-gray-800;
+  }
+
+  /* Corpo do toast */
+  .Vue-Toastification__toast-body {
+    @apply flex items-center gap-3;
+  }
+
+  /* Ícone do toast */
+  .Vue-Toastification__icon {
+    @apply flex-shrink-0 w-5 h-5;
+  }
+
+  /* Botão de fechar */
+  .Vue-Toastification__close-button {
+    @apply text-gray-400 hover:text-gray-600 transition-colors;
+    @apply w-5 h-5 flex items-center justify-center;
+    @apply rounded-full hover:bg-gray-100;
+  }
+
+  /* Barra de progresso */
+  .Vue-Toastification__progress-bar {
+    @apply h-1 rounded-full;
+  }
+
+  /* Barra de progresso - sucesso */
+  .Vue-Toastification__toast--success .Vue-Toastification__progress-bar {
+    @apply bg-green-400;
+  }
+
+  /* Barra de progresso - erro */
+  .Vue-Toastification__toast--error .Vue-Toastification__progress-bar {
+    @apply bg-red-400;
+  }
+
+  /* Barra de progresso - aviso */
+  .Vue-Toastification__toast--warning .Vue-Toastification__progress-bar {
+    @apply bg-yellow-400;
+  }
+
+  /* Barra de progresso - info */
+  .Vue-Toastification__toast--info .Vue-Toastification__progress-bar {
+    @apply bg-blue-400;
+  }
+
+  /* Barra de progresso - padrão */
+  .Vue-Toastification__toast--default .Vue-Toastification__progress-bar {
+    @apply bg-gray-400;
+  }
+
+  /* Animações personalizadas */
+  .Vue-Toastification__bounce-enter-active {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .Vue-Toastification__bounce-leave-active {
+    @apply transition-all duration-200 ease-in;
+  }
+
+  .Vue-Toastification__bounce-enter-from {
+    @apply transform translate-x-full opacity-0;
+  }
+
+  .Vue-Toastification__bounce-leave-to {
+    @apply transform translate-x-full opacity-0;
+  }
+
+  /* Responsividade para mobile */
+  @media (max-width: 640px) {
+    .Vue-Toastification__container {
+      @apply left-4 right-4 top-4;
+    }
+    
+    .Vue-Toastification__toast {
+      @apply text-xs p-3 min-h-[56px];
+    }
+  }
+
+  /* Dark mode support */
+  .dark .Vue-Toastification__toast--success {
+    @apply bg-green-900/90 border-green-700 text-green-100;
+  }
+
+  .dark .Vue-Toastification__toast--error {
+    @apply bg-red-900/90 border-red-700 text-red-100;
+  }
+
+  .dark .Vue-Toastification__toast--warning {
+    @apply bg-yellow-900/90 border-yellow-700 text-yellow-100;
+  }
+
+  .dark .Vue-Toastification__toast--info {
+    @apply bg-blue-900/90 border-blue-700 text-blue-100;
+  }
+
+  .dark .Vue-Toastification__toast--default {
+    @apply bg-gray-800/90 border-gray-600 text-gray-100;
+  }
+
+  .dark .Vue-Toastification__close-button {
+    @apply text-gray-400 hover:text-gray-200 hover:bg-gray-700;
+  }
+}
+
+@layer base {
+  :root {
+    /* Cores primárias - Azul moderno */
+    --color-primary-50: 214 100% 97%;
+    --color-primary-100: 214 95% 93%;
+    --color-primary-200: 213 97% 87%;
+    --color-primary-300: 212 96% 78%;
+    --color-primary-400: 213 94% 68%;
+    --color-primary-500: 217 91% 60%; /* Cor principal */
+    --color-primary-600: 221 83% 53%;
+    --color-primary-700: 224 76% 48%;
+    --color-primary-800: 226 71% 40%;
+    --color-primary-900: 224 64% 33%;
+    --color-primary-950: 226 55% 21%;
+
+    /* Cores secundárias - Verde sucesso */
+    --color-secondary-50: 138 76% 97%;
+    --color-secondary-100: 140 84% 92%;
+    --color-secondary-200: 141 78% 85%;
+    --color-secondary-300: 141 76% 73%;
+    --color-secondary-400: 141 69% 58%;
+    --color-secondary-500: 142 69% 45%; /* Cor principal */
+    --color-secondary-600: 142 72% 36%;
+    --color-secondary-700: 142 71% 29%;
+    --color-secondary-800: 142 64% 24%;
+    --color-secondary-900: 143 61% 20%;
+    --color-secondary-950: 144 60% 12%;
+
+    /* Cores neutras - Cinzas para textos, bordas e fundos */
+    --color-neutral-50: 210 20% 98%;
+    --color-neutral-100: 220 14% 96%;
+    --color-neutral-200: 220 13% 91%;
+    --color-neutral-300: 216 12% 84%;
+    --color-neutral-400: 218 11% 65%;
+    --color-neutral-500: 220 9% 46%;
+    --color-neutral-600: 215 14% 34%;
+    --color-neutral-700: 217 19% 27%;
+    --color-neutral-800: 215 28% 17%;
+    --color-neutral-900: 221 39% 11%;
+    --color-neutral-950: 224 71% 4%;
+
+    /* Cores base - Light mode */
+    --color-background: 0 0% 100%;
+    --color-foreground: 222 84% 5%;
+    
+    --color-card: 0 0% 100%;
+    --color-card-foreground: 222 84% 5%;
+    
+    --color-popover: 0 0% 100%;
+    --color-popover-foreground: 222 84% 5%;
+    
+    --color-muted: 210 40% 98%;
+    --color-muted-foreground: 215 16% 47%;
+    
+    --color-accent: 210 40% 98%;
+    --color-accent-foreground: 222 84% 5%;
+    
+    --color-border: 214 32% 91%;
+    --color-input: 214 32% 91%;
+    --color-ring: 217 91% 60%;
+
+    /* Estados - Light mode */
+    --color-destructive: 0 84% 60%;
+    --color-destructive-foreground: 210 40% 98%;
+    
+    --color-warning: 38 92% 50%;
+    --color-warning-foreground: 48 96% 89%;
+    
+    --color-success: 142 69% 45%;
+    --color-success-foreground: 140 84% 92%;
+    
+    --color-info: 217 91% 60%;
+    --color-info-foreground: 214 100% 97%;
+
+    /* Variáveis do design system */
+    --radius: 0.75rem;
+    
+    /* Sombras - Light mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  }
+
+  .dark {
+    /* Cores primárias - Azul claro para dark mode */
+    --color-primary-50: 226 55% 21%;
+    --color-primary-100: 224 64% 33%;
+    --color-primary-200: 226 71% 40%;
+    --color-primary-300: 224 76% 48%;
+    --color-primary-400: 221 83% 53%;
+    --color-primary-500: 217 91% 60%; /* Mesma cor principal */
+    --color-primary-600: 213 94% 68%;
+    --color-primary-700: 212 96% 78%;
+    --color-primary-800: 213 97% 87%;
+    --color-primary-900: 214 95% 93%;
+    --color-primary-950: 214 100% 97%;
+
+    /* Cores secundárias - Verde mais claro para dark mode */
+    --color-secondary-50: 144 60% 12%;
+    --color-secondary-100: 143 61% 20%;
+    --color-secondary-200: 142 64% 24%;
+    --color-secondary-300: 142 71% 29%;
+    --color-secondary-400: 142 72% 36%;
+    --color-secondary-500: 142 69% 45%; /* Mesma cor principal */
+    --color-secondary-600: 141 69% 58%;
+    --color-secondary-700: 141 76% 73%;
+    --color-secondary-800: 141 78% 85%;
+    --color-secondary-900: 140 84% 92%;
+    --color-secondary-950: 138 76% 97%;
+
+    /* Cores neutras - Cinzas invertidas para dark mode */
+    --color-neutral-50: 224 71% 4%;
+    --color-neutral-100: 221 39% 11%;
+    --color-neutral-200: 215 28% 17%;
+    --color-neutral-300: 217 19% 27%;
+    --color-neutral-400: 215 14% 34%;
+    --color-neutral-500: 220 9% 46%;
+    --color-neutral-600: 218 11% 65%;
+    --color-neutral-700: 216 12% 84%;
+    --color-neutral-800: 220 13% 91%;
+    --color-neutral-900: 220 14% 96%;
+    --color-neutral-950: 210 20% 98%;
+
+    /* Cores base - Dark mode */
+    --color-background: 222 84% 5%;
+    --color-foreground: 210 40% 98%;
+    
+    --color-card: 222 84% 5%;
+    --color-card-foreground: 210 40% 98%;
+    
+    --color-popover: 222 84% 5%;
+    --color-popover-foreground: 210 40% 98%;
+    
+    --color-muted: 217 33% 17%;
+    --color-muted-foreground: 215 20% 65%;
+    
+    --color-accent: 217 33% 17%;
+    --color-accent-foreground: 210 40% 98%;
+    
+    --color-border: 217 33% 17%;
+    --color-input: 217 33% 17%;
+    --color-ring: 217 91% 60%;
+
+    /* Estados - Dark mode */
+    --color-destructive: 0 63% 31%;
+    --color-destructive-foreground: 210 40% 98%;
+    
+    --color-warning: 38 92% 50%;
+    --color-warning-foreground: 48 96% 89%;
+    
+    --color-success: 142 69% 45%;
+    --color-success-foreground: 140 84% 92%;
+    
+    --color-info: 217 91% 60%;
+    --color-info-foreground: 214 100% 97%;
+
+    /* Sombras - Dark mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
+    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.3);
+  }
+
+  /* Reset e estilos base */
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Componentes base para agendamento */
+  .schedule-card {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm p-4 transition-all duration-200 hover:shadow-md;
+  }
+  
+  .schedule-slot {
+    @apply bg-muted/50 border border-border rounded-md p-2 text-sm transition-all duration-200 hover:bg-muted cursor-pointer;
+  }
+  
+  .schedule-slot-booked {
+    @apply bg-primary/10 border-primary/20 text-primary cursor-not-allowed;
+  }
+  
+  .schedule-slot-selected {
+    @apply bg-primary text-primary-foreground border-primary;
+  }
+  
+  .schedule-time-label {
+    @apply text-xs font-medium text-muted-foreground uppercase tracking-wide;
+  }
+  
+  .schedule-date-header {
+    @apply text-lg font-semibold text-foreground;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary rounded-md px-4 py-2 font-medium transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary rounded-md px-4 py-2 font-medium transition-colors duration-200;
+  }
+  
+  .btn-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring rounded-md px-4 py-2 font-medium transition-colors duration-200;
+  }
+  
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring rounded-md px-4 py-2 font-medium transition-colors duration-200;
+  }
+  
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive rounded-md px-4 py-2 font-medium transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  
+  .calendar-grid {
+    @apply grid grid-cols-7 gap-1;
+  }
+  
+  .calendar-day {
+    @apply aspect-square flex items-center justify-center text-sm rounded-md transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer;
+  }
+  
+  .calendar-day-selected {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .calendar-day-today {
+    @apply bg-accent text-accent-foreground font-medium;
+  }
+  
+  .calendar-day-disabled {
+    @apply text-muted-foreground cursor-not-allowed opacity-50;
+  }
+}
+
+@layer utilities {
+  /* Utilitários específicos para agendamento */
+  .animate-in {
+    animation: animateIn 0.15s ease-out;
+  }
+  
+  .animate-out {
+    animation: animateOut 0.15s ease-in;
+  }
+  
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  @keyframes animateOut {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+  
+  .glass-effect {
+    @apply bg-background/80 backdrop-blur-sm border border-border/50;
+  }
+}
