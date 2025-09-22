@@ -1,9 +1,18 @@
 <template>
   <div class="flex h-screen bg-background">
-    <!-- Sidebar sempre visível, mas com controle de colapso -->
+    <!-- Overlay para mobile quando sidebar está aberta -->
+    <div
+      v-if="isMobileVisible"
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      @click="closeMobileSidebar"
+    />
+    
+    <!-- Sidebar com comportamento responsivo -->
     <Sidebar 
       :collapsed="sidebarCollapsed"
+      :mobile-visible="isMobileVisible"
       @toggle-collapse="toggleSidebarCollapse"
+      @close-mobile="closeMobileSidebar"
     />
     
     <!-- Área Principal de Conteúdo -->
@@ -27,7 +36,12 @@ import Header from '~/components/layouts/Header.vue'
 import { useSidebar } from '~/composables/ui/useSidebar'
 
 // Usando o composable para gerenciar o estado persistente da sidebar
-const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar()
+const { 
+  isCollapsed: sidebarCollapsed, 
+  isMobileVisible,
+  toggleSidebar,
+  closeMobileSidebar 
+} = useSidebar()
 
 // Função para alternar o colapso da sidebar (usado pelo botão do header)
 const toggleSidebarCollapse = () => {

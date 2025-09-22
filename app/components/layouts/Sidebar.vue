@@ -66,11 +66,11 @@
       :class="
         collapsed ? 'p-2 border-t border-border' : 'p-4 border-t border-border'
       "
-      class="flex-shrink-0"
-      :style="{ 
+      class="absolute inset-x-0 bottom-0 z-10"
+      :style="{
         maxWidth: collapsed ? '4rem' : '16rem',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
       }"
     >
       <!-- Dropdown do usuário -->
@@ -83,29 +83,17 @@
         <template #trigger="{ isOpen }">
           <div
             class="bg-muted hover:bg-accent transition-colors cursor-pointer rounded-lg w-full max-w-full overflow-hidden"
-            :class="[
-              collapsed ? 'p-2' : 'p-3',
-              isOpen ? 'bg-accent' : ''
-            ]"
-            style="box-sizing: border-box;"
+            :class="[collapsed ? 'p-2' : 'p-3', isOpen ? 'bg-accent' : '']"
+            style="box-sizing: border-box"
           >
             <div
               class="flex items-center w-full max-w-full overflow-hidden"
               :class="collapsed ? 'justify-center' : 'space-x-3'"
-              style="box-sizing: border-box;"
+              style="box-sizing: border-box"
             >
-              <!-- Foto do Usuário - tamanho ajustado para modo colapsado -->
+              <!-- Foto do Usuário - sempre com iniciais do nome -->
               <div class="relative flex-shrink-0">
-                <img
-                  v-if="user?.avatar_url"
-                  :src="user.avatar_url"
-                  :alt="user.name || 'Usuário'"
-                  :class="collapsed ? 'w-8 h-8' : 'w-10 h-10'"
-                  class="rounded-full object-cover border-2 border-border transition-all duration-300"
-                />
-                <!-- Avatar padrão caso não tenha foto -->
                 <div
-                  v-else
                   :class="collapsed ? 'w-8 h-8' : 'w-10 h-10'"
                   class="rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center border-2 border-border transition-all duration-300"
                 >
@@ -113,14 +101,20 @@
                     :class="collapsed ? 'text-xs' : 'text-sm'"
                     class="text-white font-medium transition-all duration-300"
                   >
-                    {{ getUserInitials(user?.name) }}
+                    {{ getUserInitials(store.profile?.nome) }}
                   </span>
                 </div>
               </div>
 
               <!-- Informações do Usuário (ocultas quando colapsado) -->
-              <div v-if="!collapsed" class="flex-1 min-w-0 overflow-hidden" style="box-sizing: border-box;">
-                <p class="text-sm font-medium text-card-foreground truncate text-left">
+              <div
+                v-if="!collapsed"
+                class="flex-1 min-w-0 overflow-hidden"
+                style="box-sizing: border-box"
+              >
+                <p
+                  class="text-sm font-medium text-card-foreground truncate text-left"
+                >
                   {{ displayName }}
                 </p>
                 <p class="text-xs text-muted-foreground truncate text-left">
@@ -171,14 +165,17 @@ import {
   EllipsisVerticalIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
+  XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuth } from "~/composables/core/useAuth";
+import { useUserStore } from "../../../stores/user";
 import Dropdown from "~/components/ui/Dropdown.vue";
 import DropdownItem from "~/components/ui/DropdownItem.vue";
 import type { User } from "~/features/auth/types/auth";
 
 // Composables
-const { user, logout } = useAuth();
+const { logout } = useAuth();
+const store = useUserStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -186,24 +183,41 @@ const route = useRoute();
 interface SidebarProps {
   /** Estado de colapso da sidebar */
   collapsed?: boolean;
+  /** Controla visibilidade em dispositivos móveis */
+  mobileVisible?: boolean;
 }
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsed: false,
+  mobileVisible: false,
 });
 
-// Emits para comunicação com componente pai (removido toggle-collapse)
-const emit = defineEmits<{}>();
+// Emits para comunicação com componente pai
+const emit = defineEmits<{
+  closeMobile: [];
+}>();
 
-// Classes dinâmicas da sidebar baseadas no estado de colapso
+// Classes dinâmicas da sidebar baseadas no estado de colapso e responsividade
 const sidebarClasses = computed(() => {
   const baseClasses =
     "flex flex-col h-screen bg-card border-r border-border shadow-sm transition-all duration-300 ease-in-out relative z-50";
 
+  // Classes responsivas
+  const responsiveClasses = [
+    // Desktop: sempre visível, controla apenas colapso
+    "lg:block",
+    // Mobile/Tablet: oculto por padrão, visível apenas quando mobileVisible é true
+    props.mobileVisible ? "block" : "hidden lg:block",
+    // Em mobile, sempre ocupa posição fixa quando visível
+    "lg:relative fixed lg:translate-x-0",
+    // Z-index maior em mobile para ficar sobre o overlay
+    "lg:z-50 z-50",
+  ];
+
   if (props.collapsed) {
-    return `${baseClasses} w-16`;
+    return `${baseClasses} w-16 ${responsiveClasses.join(" ")}`;
   } else {
-    return `${baseClasses} w-64`;
+    return `${baseClasses} w-64 ${responsiveClasses.join(" ")}`;
   }
 });
 
@@ -312,19 +326,25 @@ const getMenuItemClasses = (path: string) => {
 // Função para navegar para uma rota
 const navigateToRoute = async (path: string) => {
   await router.push(path);
+
+  // Fechar o menu lateral em dispositivos móveis e tablets após navegação
+  // Verifica se está em modo mobile/tablet (largura menor que 1024px - breakpoint lg do Tailwind)
+  if (window.innerWidth < 1024) {
+    emit("closeMobile");
+  }
 };
 
 // Computed properties para exibição segura dos dados do usuário
 const displayName = computed(() => {
-  return user.value?.user_metadata?.full_name || user.value?.email || 'Usuário';
+  return store.profile?.nome || "Usuário";
 });
 
 const displayEmail = computed(() => {
-  return user.value?.email || 'email@exemplo.com';
+  return store.user?.email || "email@exemplo.com";
 });
 
 // Função para obter as iniciais do nome do usuário
-const getUserInitials = (name?: string): string => {
+const getUserInitials = (name?: string | null): string => {
   if (!name) return "?";
 
   const names = name.trim().split(" ");
@@ -340,18 +360,18 @@ const getUserInitials = (name?: string): string => {
 // Handlers do dropdown do usuário
 const handleProfileClick = async (closeDropdown: () => void) => {
   closeDropdown();
-  if (!user.value) return; // evita navegação quando não autenticado
-  await router.push('/admin/profile');
+  if (!store.user) return; // evita navegação quando não autenticado
+  await router.push("/admin/profile");
 };
 
 const handleLogoutClick = async (closeDropdown: () => void) => {
   closeDropdown();
-  if (!user.value) return; // sem usuário, nada a fazer
+  if (!store.user) return; // sem usuário, nada a fazer
   try {
     await logout();
-    await router.push('/auth/login');
+    await router.push("/auth/login");
   } catch (error) {
-    console.error('Erro ao fazer logout:', error);
+    console.error("Erro ao fazer logout:", error);
   }
 };
 </script>

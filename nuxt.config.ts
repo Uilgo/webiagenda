@@ -2,12 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: false },
-  modules: ["@nuxtjs/tailwindcss", "@nuxtjs/supabase"],
+  modules: ["@nuxtjs/tailwindcss", "@nuxtjs/supabase", "@pinia/nuxt"],
   css: ["~/assets/css/main.css"],
 
   // Configuração do Supabase
   supabase: {
-    redirect: false, // Desabilita redirecionamento automático
     redirectOptions: {
       login: '/auth/section?form=login',
       callback: '/confirm',
@@ -41,5 +40,11 @@ export default defineNuxtConfig({
     prerender: {
       routes: ["/"],
     },
+  },
+
+  app: {
+    head: {
+      title: 'WebiAgenda'
+    }
   },
 });

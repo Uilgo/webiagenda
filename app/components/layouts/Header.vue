@@ -17,9 +17,6 @@
         <h1 class="text-lg font-semibold text-foreground">
           {{ pageTitle }}
         </h1>
-        <p v-if="pageDescription" class="text-sm text-muted-foreground">
-          {{ pageDescription }}
-        </p>
       </div>
 
       <!-- Área direita com controles -->
@@ -41,13 +38,10 @@ import ThemeToggle from '~/components/ui/ThemeToggle.vue'
 interface HeaderProps {
   /** Título personalizado (opcional) */
   title?: string
-  /** Descrição personalizada (opcional) */
-  description?: string
 }
 
 const props = withDefaults(defineProps<HeaderProps>(), {
-  title: '',
-  description: ''
+  title: ''
 })
 
 // Emits para comunicação com componente pai
@@ -82,24 +76,6 @@ const pageTitle = computed(() => {
   return routeMap[route.path] || 'Painel Administrativo'
 })
 
-// Descrição dinâmica baseada na rota atual
-const pageDescription = computed(() => {
-  // Se foi passada uma descrição via props, usa ela
-  if (props.description) {
-    return props.description
-  }
-
-  // Mapeamento de rotas para descrições
-  const descriptionMap: Record<string, string> = {
-    '/admin/dashboard': 'Visão geral das atividades e estatísticas do sistema',
-    '/admin/agendamentos': 'Controlar e organizar agendamentos',
-    '/admin/clientes': 'Gerenciar informações dos clientes',
-    '/admin/especialidades': 'Gerenciar especialidades médicas disponíveis',
-    '/admin/profissionais': 'Administrar profissionais e suas especialidades'
-  }
-  
-  return descriptionMap[route.path] || ''
-})
 </script>
 
 <style scoped>
