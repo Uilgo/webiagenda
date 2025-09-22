@@ -9,6 +9,7 @@ import AgendamentosPage from '~/features/admin/agendamentos/AgendamentosPage.vue
 // Configurando o layout admin para esta página
 definePageMeta({
   layout: 'admin',
+  middleware: ['auth'],
   title: 'Agendamentos'
 })
 </script>

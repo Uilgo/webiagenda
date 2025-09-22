@@ -121,10 +121,10 @@
               <!-- Informações do Usuário (ocultas quando colapsado) -->
               <div v-if="!collapsed" class="flex-1 min-w-0 overflow-hidden" style="box-sizing: border-box;">
                 <p class="text-sm font-medium text-card-foreground truncate text-left">
-                  {{ user?.name || "Usuário" }}
+                  {{ displayName }}
                 </p>
                 <p class="text-xs text-muted-foreground truncate text-left">
-                  {{ user?.email || "email@exemplo.com" }}
+                  {{ displayEmail }}
                 </p>
               </div>
 
@@ -314,9 +314,18 @@ const navigateToRoute = async (path: string) => {
   await router.push(path);
 };
 
+// Computed properties para exibição segura dos dados do usuário
+const displayName = computed(() => {
+  return user.value?.user_metadata?.full_name || user.value?.email || 'Usuário';
+});
+
+const displayEmail = computed(() => {
+  return user.value?.email || 'email@exemplo.com';
+});
+
 // Função para obter as iniciais do nome do usuário
 const getUserInitials = (name?: string): string => {
-  if (!name) return "U";
+  if (!name) return "?";
 
   const names = name.trim().split(" ");
   if (names.length === 1) {
@@ -331,16 +340,15 @@ const getUserInitials = (name?: string): string => {
 // Handlers do dropdown do usuário
 const handleProfileClick = async (closeDropdown: () => void) => {
   closeDropdown();
-  // Navegar para a página de perfil
+  if (!user.value) return; // evita navegação quando não autenticado
   await router.push('/admin/profile');
 };
 
 const handleLogoutClick = async (closeDropdown: () => void) => {
   closeDropdown();
-  // Realizar logout
+  if (!user.value) return; // sem usuário, nada a fazer
   try {
     await logout();
-    // Redirecionar para a página de login
     await router.push('/auth/login');
   } catch (error) {
     console.error('Erro ao fazer logout:', error);

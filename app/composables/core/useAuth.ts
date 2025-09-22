@@ -113,7 +113,7 @@ export const useAuth = () => {
       }
 
       // Logout bem-sucedido - redireciona para página de autenticação
-      await router.push('/auth/section?form=login')
+      await router.push('/auth/login')
       
       return {
         success: true

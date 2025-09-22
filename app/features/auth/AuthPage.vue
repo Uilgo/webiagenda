@@ -196,17 +196,11 @@ const validForms = ['login', 'signup', 'forgot-password'] as const
 
 // Função para alternar entre formulários
 const switchToForm = async (formType: AuthFormType) => {
-  // Só atualiza se for diferente do formulário atual
-  if (currentForm.value === formType) {
-    return
-  }
-  
+  if (currentForm.value === formType) return
   currentForm.value = formType
-  
-  // Atualiza a URL usando query parameters apenas se necessário
   const targetQuery = { form: formType }
   if (route.query.form !== formType) {
-    await router.push({ path: '/auth/section', query: targetQuery })
+    await router.push({ path: '/auth/login', query: targetQuery })
   }
 }
 
@@ -215,15 +209,12 @@ watch(
   () => route.query.form,
   (newForm) => {
     if (newForm && ['login', 'signup', 'forgot-password'].includes(newForm as string)) {
-      // Só atualiza se for diferente do formulário atual para evitar loops
       if (currentForm.value !== newForm) {
         currentForm.value = newForm as AuthFormType
       }
-    } else if (!newForm && route.path === '/auth/section') {
-      // Se não há query form e estamos na rota /auth/section, redireciona para /auth/section?form=login
-      console.log('🔄 Redirecionando para /auth/section?form=login')
+    } else if (!newForm && route.path === '/auth/login') {
       if (currentForm.value !== 'login') {
-        router.replace('/auth/section?form=login')
+        router.replace('/auth/login?form=login')
       }
     }
   },
@@ -233,22 +224,17 @@ watch(
 // Inicialização do formulário baseado na query da rota
 onMounted(() => {
   const formParam = route.query.form as string
-  
   if (formParam && ['login', 'signup', 'forgot-password'].includes(formParam)) {
     currentForm.value = formParam as AuthFormType
   } else {
-    // Se não há query form válida, redireciona para /auth/section?form=login
-    router.replace('/auth/section?form=login')
+    router.replace('/auth/login?form=login')
   }
-  
   isInitialLoad.value = false
 })
 
 // Observa mudanças no estado de autenticação para redirecionar quando necessário
 watch(isAuthenticated, (authenticated) => {
   if (authenticated && route.path.startsWith('/auth')) {
-    // Usuário autenticado - redireciona para página inicial apenas se em página de auth
-    // Adiciona guard para evitar múltiplos pushes durante flow
     if (!isInitialLoad.value) {
       router.push('/')
     }

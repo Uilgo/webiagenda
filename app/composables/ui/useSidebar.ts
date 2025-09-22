@@ -1,33 +1,24 @@
-import { computed } from "vue";
-import { useCookie } from "#app";
-
 /**
- * Composable para gerenciar o estado da sidebar com persistência via cookie (SSR-safe)
- * Mantém o estado de colapso/expansão da sidebar entre recarregamentos da página
+ * Composable para gerenciar o estado da sidebar de forma compatível com SSR
+ * Usa useState do Nuxt para evitar problemas de hidratação
+ * Mantém o estado sincronizado entre servidor e cliente
  */
 export const useSidebar = () => {
-  const collapsedCookie = useCookie<boolean>("webiagenda-sidebar-collapsed", {
-    default: () => false,
-    maxAge: 60 * 60 * 24 * 365, // 1 ano
-  });
+  // Estado reativo usando useState do Nuxt para compatibilidade SSR
+  const isCollapsed = useState<boolean>('sidebar-collapsed', () => false);
 
-  const isCollapsed = computed({
-    get: () => collapsedCookie.value ?? false,
-    set: (value: boolean) => {
-      collapsedCookie.value = value;
-    },
-  });
-
+  // Função para alternar o estado da sidebar
   const toggleSidebar = () => {
     isCollapsed.value = !isCollapsed.value;
   };
 
+  // Função para definir o estado da sidebar
   const setSidebarCollapsed = (collapsed: boolean) => {
     isCollapsed.value = collapsed;
   };
 
   return {
-    isCollapsed,
+    isCollapsed: readonly(isCollapsed),
     toggleSidebar,
     setSidebarCollapsed,
   };

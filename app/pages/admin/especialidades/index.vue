@@ -9,6 +9,7 @@ import EspecialidadesPage from '~/features/admin/especialidades/especialidadesPa
 // Configurando o layout admin para esta página
 definePageMeta({
   layout: 'admin',
+  middleware: ['auth'],
   title: 'Especialidades'
 })
 </script>

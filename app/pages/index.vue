@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Configuração da página - deve estar no topo
 definePageMeta({
-  layout: 'admin'
+  layout: false // Esta página é apenas um redirecionador; evitar renderizar qualquer layout aqui para não duplicar a UI
 })
 
 // Composables necessários
@@ -20,7 +20,7 @@ onMounted(async () => {
     await router.push('/admin/dashboard')
   } else {
     // Usuário não autenticado - redireciona para login
-    await router.push('/auth/section?form=login')
+    await router.push('/auth/login?form=login')
   }
 })
 
@@ -31,19 +31,17 @@ watch(user, async (newUser) => {
     await router.push('/admin/dashboard')
   } else {
     // Usuário fez logout - redireciona para login
-    await router.push('/auth/section?form=login')
+    await router.push('/auth/login?form=login')
   }
 }, { immediate: false })
 </script>
 
 <template>
-  <NuxtLayout>
-    <!-- Página de redirecionamento - exibe loading durante redirecionamento -->
-    <div class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="mt-2 text-muted-foreground">Carregando...</p>
-      </div>
+  <!-- Página de redirecionamento - exibe loading durante redirecionamento sem renderizar nenhum layout -->
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-2 text-muted-foreground">Carregando...</p>
     </div>
-  </NuxtLayout>
+  </div>
 </template>

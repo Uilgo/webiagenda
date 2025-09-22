@@ -9,6 +9,7 @@ import DashboardPage from '~/features/admin/dashboard/DashboardPage.vue'
 // Configurando o layout admin para esta página
 definePageMeta({
   layout: 'admin',
+  middleware: ['auth'],
   title: 'Dashboard'
 })
 </script>
