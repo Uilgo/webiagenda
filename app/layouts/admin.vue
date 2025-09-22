@@ -1,9 +1,10 @@
 <template>
   <div class="flex h-screen bg-background">
-    <!-- Sidebar com controle de visibilidade -->
-    <Transition name="sidebar" mode="out-in">
-      <Sidebar v-show="sidebarVisible" />
-    </Transition>
+    <!-- Sidebar sempre visível, mas com controle de colapso -->
+    <Sidebar 
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleSidebarCollapse"
+    />
     
     <!-- Área Principal de Conteúdo -->
     <main class="flex-1 flex flex-col overflow-hidden">
@@ -21,16 +22,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import Sidebar from '~/components/layouts/Sidebar.vue'
 import Header from '~/components/layouts/Header.vue'
+import { useSidebar } from '~/composables/ui/useSidebar'
 
-// Estado da sidebar (visível/oculta)
-const sidebarVisible = ref(true)
+// Usando o composable para gerenciar o estado persistente da sidebar
+const { isCollapsed: sidebarCollapsed, toggleSidebar } = useSidebar()
 
-// Função para alternar a visibilidade da sidebar
-const toggleSidebar = () => {
-  sidebarVisible.value = !sidebarVisible.value
+// Função para alternar o colapso da sidebar (usado pelo botão do header)
+const toggleSidebarCollapse = () => {
+  toggleSidebar()
 }
 </script>
 

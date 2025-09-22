@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-screen bg-background">
     <!-- Header do Dashboard -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-foreground">Dashboard Administrativo</h1>

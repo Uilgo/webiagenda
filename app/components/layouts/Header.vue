@@ -1,10 +1,10 @@
 <template>
   <header class="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div class="container flex p-6 items-center">
+    <div class="container flex px-6 h-20 items-center">
       <!-- Ícone de Sidebar (lado esquerdo) -->
       <button
         type="button"
-        class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+        class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none"
         @click="toggleSidebar"
         aria-label="Abrir/Fechar menu lateral"
       >
