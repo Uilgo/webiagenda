@@ -9,7 +9,6 @@ import ProfissionaisPage from '~/features/admin/profissionais/ProfissionaisPage.
 // Configurando o layout admin para esta página
 definePageMeta({
   layout: 'admin',
-  middleware: ['auth'],
   title: 'Profissionais'
 })
 </script>

@@ -8,10 +8,10 @@ export default defineNuxtConfig({
   // Configuração do Supabase
   supabase: {
     redirectOptions: {
-      login: '/auth/section?form=login',
-      callback: '/confirm',
-      exclude: ['/']
-    }
+      login: "/auth/section?form=login",
+      callback: "/confirm",
+      exclude: ["/", "/auth/**", "/confirm"],
+    },
   },
   components: [
     {
@@ -44,7 +44,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'WebiAgenda'
-    }
+      title: "WebiAgenda",
+    },
   },
 });

@@ -245,12 +245,10 @@ watch(isAuthenticated, (authenticated) => {
 const handleLogin = async (data: LoginData) => {
   // O LoginForm agora gerencia o login diretamente através do composable useAuth
   // Este handler é mantido para compatibilidade, mas a lógica real está no LoginForm
-  console.log('Login iniciado via AuthPage:', data)
 }
 
 const handleSignup = async (data: SignupData) => {
   try {
-    console.log('Signup data:', data)
     // TODO: Implementar lógica de cadastro
     // await authStore.signup(data)
     // router.push('/dashboard')
@@ -262,7 +260,6 @@ const handleSignup = async (data: SignupData) => {
 
 const handleForgotPassword = async (data: ForgotPasswordData) => {
   try {
-    console.log('Forgot password data:', data)
     // TODO: Implementar lógica de recuperação de senha
     // await authStore.forgotPassword(data)
     // Mostrar mensagem de sucesso

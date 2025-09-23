@@ -4,12 +4,11 @@
 
 <script setup lang="ts">
 // Importando o componente da feature de agendamentos
-import AgendamentosPage from '~/features/admin/agendamentos/AgendamentosPage.vue'
+import AgendamentosPage from "~/features/admin/agendamentos/AgendamentosPage.vue";
 
 // Configurando o layout admin para esta página
 definePageMeta({
-  layout: 'admin',
-  middleware: ['auth'],
-  title: 'Agendamentos'
-})
+  layout: "admin",
+  title: "Agendamentos",
+});
 </script>
