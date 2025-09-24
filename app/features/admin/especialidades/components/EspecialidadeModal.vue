@@ -1,6 +1,6 @@
 <template>
   <Modal
-    :modelValue="modelValue"
+    :modelValue="props.modelValue"
     :title="isEdicao ? 'Editar Especialidade' : 'Nova Especialidade'"
     @update:modelValue="(value) => emit('update:modelValue', value)"
   >
@@ -25,7 +25,10 @@
     <template #footer>
       <div class="flex justify-end space-x-3">
         <Button type="button" variant="outline" @click="close">Cancelar</Button>
-        <Button type="submit" form="especialidade-form" :disabled="saving"
+        <Button
+          type="submit"
+          form="especialidade-form"
+          :disabled="saving || fetching"
           >Salvar</Button
         >
       </div>
@@ -34,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 // import { defineProps, defineEmits } from 'vue'
 import Modal from "~/components/ui/Modal.vue";
 import Button from "~/components/ui/Button.vue";
@@ -47,11 +50,13 @@ interface Props {
   modelValue: boolean;
   isEdicao?: boolean;
   especialidadeId?: string | null;
+  initialEspecialidade?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isEdicao: false,
   especialidadeId: null,
+  initialEspecialidade: null,
 });
 
 const emit = defineEmits<{
@@ -64,31 +69,57 @@ const emit = defineEmits<{
 const form = ref("");
 
 const saving = ref(false);
+const fetching = ref(false);
 
-const { insertEspecialidade } = useEspecialidades();
+// token para invalidar fetches antigos — incrementamos antes de cada fetch
+// e checamos após o retorno; se não bater, ignoramos o resultado (evita sobrescrever
+// o form com uma resposta antiga quando o usuário abre edições diferentes rapidamente)
+const fetchToken = ref(0);
+
+const { insertEspecialidade, editEspecialidade } = useEspecialidades();
 const toast = useToast() as ToastInterface;
 
 const fetchEspecialidade = async (id: string) => {
   const client = useSupabaseClient();
-  const { data, error } = await (client.from("especialidades") as any)
-    .select("*")
-    .eq("id", id)
-    .single();
+  // invalidar fetch anterior e marcar início deste fetch
+  fetchToken.value += 1;
+  const thisToken = fetchToken.value;
 
-  if (error) {
-    console.error("Erro ao buscar especialidade:", error);
-    toast.error("Erro ao carregar especialidade para edição.");
-    return;
-  }
+  // limpar formulário antes de buscar para evitar mostrar dado antigo
+  form.value = "";
+  fetching.value = true;
+  try {
+    const { data, error } = await (client.from("especialidades") as any)
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (data) {
-    form.value = data.especialidade ?? "";
+    if (error) {
+      console.error("Erro ao buscar especialidade:", error);
+      toast.error("Erro ao carregar especialidade para edição.");
+      return;
+    }
+
+    // Se outro fetch mais recente foi iniciado, ignoramos este resultado
+    if (thisToken !== fetchToken.value) return;
+
+    if (data) {
+      form.value = data.especialidade ?? "";
+    }
+  } finally {
+    // Só limpamos fetching se este ainda for o fetch atual
+    if (thisToken === fetchToken.value) {
+      fetching.value = false;
+    }
   }
 };
 
 const resetForm = () => {
   form.value = "";
   saving.value = false;
+  fetching.value = false;
+  // invalidar qualquer fetch pendente para evitar sobrescrita posterior
+  fetchToken.value += 1;
 };
 
 const close = () => {
@@ -107,14 +138,24 @@ const save = async () => {
 
   try {
     if (props.isEdicao && props.especialidadeId) {
-      // Update
-      const { error } = await (client.from("especialidades") as any)
-        .update({ especialidade: form.value })
-        .eq("id", props.especialidadeId);
+      // Edit via RPC
+      const result = await editEspecialidade(props.especialidadeId, form.value);
 
-      if (error) throw error;
+      const isSuccessEdit =
+        (result && typeof result === "object" && result.success === true) ||
+        (result && typeof result === "object" && result.payload) ||
+        result === null ||
+        typeof result === "undefined";
 
-      toast.success("Especialidade atualizada com sucesso!");
+      if (isSuccessEdit) {
+        toast.success(
+          (result && result.message) || "Especialidade atualizada com sucesso!"
+        );
+        emit("update:modelValue", false);
+        emit("saved");
+      } else {
+        throw new Error(result?.message || "Erro ao editar especialidade.");
+      }
     } else {
       // Insert
       const result = await insertEspecialidade(form.value);
@@ -152,7 +193,19 @@ watch(
   () => [props.isEdicao, props.especialidadeId],
   ([isEdicao, especialidadeId]) => {
     if (isEdicao && especialidadeId) {
-      fetchEspecialidade(especialidadeId as string);
+      // Se o pai já passou a especialidade inicial (pré-carregada), usamos direto
+      if (
+        props.initialEspecialidade !== null &&
+        props.initialEspecialidade !== undefined
+      ) {
+        form.value = props.initialEspecialidade ?? "";
+        // Não chamamos fetchEspecialidade pois já temos o valor
+        fetching.value = false;
+      } else {
+        // limpar form enquanto carrega a nova especialidade
+        form.value = "";
+        fetchEspecialidade(especialidadeId as string);
+      }
     } else {
       form.value = "";
     }
