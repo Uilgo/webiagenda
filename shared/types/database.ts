@@ -5,6 +5,7 @@
 export type Database = {
   public: {
     Profile: Profile;
+    Especialidades: Especialidades;
   }
 }
 
@@ -20,4 +21,15 @@ export interface Profile {
   user_id: string | null;
   nome: string | null;
   role: string | null;
+}
+
+/**
+ * Interface Especialidades que define a estrutura da tabela especialidades no banco de dados.
+ * Inclui campos como ID, datas de criação e atualização, e o nome da especialidade.
+ */
+export interface Especialidades {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  especialidade: string | null;
 }

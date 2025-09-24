@@ -60,7 +60,7 @@ watch(user, async (newUser) => {
   if (newUser) {
     try {
       // Usuário autenticado com sucesso
-      console.log('Usuário confirmado:', newUser.email)
+      
       
       // Redireciona para a página inicial ou página salva no cookie
       await router.push('/')
