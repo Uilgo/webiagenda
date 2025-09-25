@@ -66,9 +66,11 @@ const name = ref<string | null>(null);
 
 const toast = useToast() as ToastInterface;
 
-const displayName = computed(
-  () => name.value ?? props.profissionalNome ?? "---"
-);
+const displayName = computed(() => {
+  // Se o modal estiver fechado, sempre usar placeholder
+  if (!props.modelValue) return "---";
+  return name.value ?? props.profissionalNome ?? "---";
+});
 
 const resetForm = () => {
   saving.value = false;
@@ -77,11 +79,12 @@ const resetForm = () => {
 };
 
 const close = () => {
-  emit("update:modelValue", false);
   resetForm();
+  emit("update:modelValue", false);
 };
 
-const { deleteProfissional } = useProfissionais();
+const { deleteProfissional, fetchProfissionais, profissionais } =
+  useProfissionais();
 
 const remove = async () => {
   if (!props.profissionalId) {
@@ -91,7 +94,9 @@ const remove = async () => {
 
   saving.value = true;
   try {
-    const result = await deleteProfissional(props.profissionalId as string);
+    // garantir que enviamos um número para o composable
+    const idNum = Number(props.profissionalId);
+    const result = await deleteProfissional(idNum);
 
     const isSuccess =
       result === null ||
@@ -103,6 +108,8 @@ const remove = async () => {
         (result && result.message) || "Profissional excluído com sucesso."
       );
       emit("deleted");
+      // reset antes de emitir para garantir que o modal não persista dados
+      resetForm();
       emit("update:modelValue", false);
     } else {
       throw new Error(result?.message || "Erro ao excluir profissional.");
@@ -121,7 +128,52 @@ watch(
     if (!val) {
       resetForm();
     } else {
-      name.value = props.profissionalNome ?? null;
+      // Se o nome já foi fornecido pela página, usa diretamente
+      if (props.profissionalNome) {
+        name.value = props.profissionalNome;
+        return;
+      }
+
+      // Senão, tentamos achar no cache de profissionais
+      const idNum = Number(props.profissionalId);
+      if (
+        !Number.isNaN(idNum) &&
+        profissionais.value &&
+        profissionais.value.length > 0
+      ) {
+        const found = (profissionais.value as any).find(
+          (p: any) =>
+            p.id_do_profissional === idNum ||
+            p.id_do_perfil === idNum ||
+            p.id === idNum
+        );
+        if (found) {
+          name.value = found.nome_do_profissional ?? found.nome ?? null;
+          return;
+        }
+      }
+
+      // Caso não esteja em cache, buscamos do servidor
+      fetching.value = true;
+      fetchProfissionais()
+        .then(() => {
+          const found = (profissionais.value as any).find(
+            (p: any) =>
+              p.id_do_profissional === idNum ||
+              p.id_do_perfil === idNum ||
+              p.id === idNum
+          );
+          name.value = found
+            ? found.nome_do_profissional ?? found.nome ?? null
+            : null;
+        })
+        .catch((e) => {
+          console.error("Erro ao buscar profissionais para preencher nome:", e);
+          name.value = null;
+        })
+        .finally(() => {
+          fetching.value = false;
+        });
     }
   },
   { immediate: true }

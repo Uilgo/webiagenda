@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import Button from "~/components/ui/Button.vue";
 import ProfissionaisTable from "./components/ProfissionaisTable.vue";
 import ProfissionalModal from "./components/ProfissionalModal.vue";
@@ -59,9 +59,38 @@ import { useEspecialidades } from "../../../composables/core/useEspecialidades";
 
 const userStore = useUserStore();
 
-const { profissionais, fetchProfissionais } = useProfissionais();
-const { users, fetchUsers } = useUsers();
-const { especialidades, fetchEspecialidades } = useEspecialidades();
+// Inicializa os composables para ter acesso às funções de fetch
+const profissionaisComposable = useProfissionais();
+const usersComposable = useUsers();
+const especialidadesComposable = useEspecialidades();
+
+const { data: profissionaisData, refresh: refreshProfissionaisData } = await useAsyncData(
+  "profissionais",
+  async () => {
+    await profissionaisComposable.fetchProfissionais();
+    return profissionaisComposable.profissionais.value;
+  }
+);
+
+const { data: usersData, refresh: refreshUsersData } = await useAsyncData(
+  "users",
+  async () => {
+    await usersComposable.fetchUsers();
+    return usersComposable.users.value;
+  }
+);
+
+const { data: especialidadesData, refresh: refreshEspecialidadesData } = await useAsyncData(
+  "especialidades",
+  async () => {
+    await especialidadesComposable.fetchEspecialidades();
+    return especialidadesComposable.especialidades.value;
+  }
+);
+
+const profissionais = computed(() => profissionaisData.value || []);
+const users = computed(() => usersData.value || []);
+const especialidades = computed(() => especialidadesData.value || []);
 
 const isRefreshing = ref(false);
 
@@ -116,37 +145,26 @@ const openDeleteModal = (id: string, name?: string | null) => {
   showDeleteModal.value = true;
 };
 
-const handleDeleted = () => {
+const handleDeleted = async () => {
   showDeleteModal.value = false;
-  refreshProfissionais();
+  await refreshProfissionaisData();
 };
 
 const refreshProfissionais = async () => {
   if (isRefreshing.value) return;
   isRefreshing.value = true;
   try {
-    await fetchProfissionais();
+    await refreshProfissionaisData();
   } finally {
     isRefreshing.value = false;
   }
 };
 
-const handleSaved = () => {
+const handleSaved = async () => {
   showModal.value = false;
-  refreshProfissionais();
+  await refreshProfissionaisData();
+  await refreshUsersData();
+  await refreshEspecialidadesData();
 };
 
-onMounted(() => {
-  (async () => {
-    try {
-      await Promise.all([
-        fetchUsers(),
-        fetchEspecialidades(),
-        fetchProfissionais(),
-      ]);
-    } catch (e) {
-      console.error("Falha ao carregar dados iniciais", e);
-    }
-  })();
-});
 </script>

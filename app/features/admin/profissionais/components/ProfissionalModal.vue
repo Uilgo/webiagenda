@@ -14,6 +14,7 @@
           :usePortal="true"
           width="trigger"
           :triggerClass="'w-full rounded-md border px-3 py-2 text-left'"
+          :disabled="props.isEdicao"
         >
           <template #trigger="{ isOpen, toggle }">
             <div class="flex w-full justify-between items-center">
@@ -206,9 +207,9 @@ const save = async () => {
 
   try {
     if (props.isEdicao && props.profissionalId) {
+      // Em edição, apenas atualizamos a especialidade do profissional.
       const result = await editProfissional(
         props.profissionalId,
-        form.value.user_id,
         form.value.id_da_especialidade
       );
 

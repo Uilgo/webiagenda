@@ -5,11 +5,16 @@
       <button
         type="button"
         class="inline-flex w-full justify-center items-center"
-        :class="triggerClass"
+        :class="[
+          triggerClass,
+          props.disabled ? 'opacity-50 cursor-not-allowed' : '',
+        ]"
         @click="toggleDropdown"
         ref="triggerRef"
         :aria-expanded="isOpen"
         aria-haspopup="true"
+        :aria-disabled="props.disabled"
+        :disabled="props.disabled"
       >
         <slot name="trigger" :isOpen="isOpen" :toggle="toggleDropdown">
           <!-- Conteúdo padrão do trigger se não fornecido -->
@@ -85,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { ChevronDownIcon } from "@heroicons/vue/24/outline";
 
 // Props do componente
@@ -105,6 +110,8 @@ interface DropdownProps {
   closeOnClickOutside?: boolean;
   /** Renderizar conteúdo em um Teleport para body (evita corte em modais) */
   usePortal?: boolean;
+  /** Desabilita o dropdown (impede abrir e aplica estilo) */
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<DropdownProps>(), {
@@ -113,6 +120,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
   triggerClass: "",
   closeOnClickOutside: true,
   usePortal: false,
+  disabled: false,
 });
 
 // Emits
@@ -168,6 +176,7 @@ const portalMinWidths: Record<NonNullable<DropdownProps["width"]>, number> = {
 
 // Funções para controlar o dropdown
 const openDropdown = () => {
+  if (props.disabled) return;
   isOpen.value = true;
   emit("open");
   emit("toggle", true);
@@ -188,12 +197,21 @@ const closeDropdown = () => {
 };
 
 const toggleDropdown = () => {
+  if (props.disabled) return;
   if (isOpen.value) {
     closeDropdown();
   } else {
     openDropdown();
   }
 };
+
+// Fechar automaticamente quando o dropdown for desabilitado
+watch(
+  () => props.disabled,
+  (val) => {
+    if (val && isOpen.value) closeDropdown();
+  }
+);
 
 // Handler para clique fora do dropdown
 const handleClickOutside = (event: Event) => {

@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-50 overflow-y-auto"
+      class="fixed inset-0 z-[999] overflow-y-auto"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"

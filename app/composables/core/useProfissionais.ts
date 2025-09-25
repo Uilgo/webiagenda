@@ -82,9 +82,10 @@ export const useProfissionais = () => {
     p_id_especialidade: number | null
   ) => {
     const client = useSupabaseClient() as SupabaseClient;
+    // O RPC espera os nomes: p_especialidade_id e p_profile_id
     const { data, error } = await client.rpc("inserir_profissional", {
-      p_id_perfil,
-      p_id_especialidade,
+      p_especialidade_id: p_id_especialidade,
+      p_profile_id: p_id_perfil,
     } as any);
 
     if (error) {
@@ -112,16 +113,17 @@ export const useProfissionais = () => {
   /**
    * Edita um profissional via RPC 'editar_profissional'
    */
+  // Edita um profissional via RPC 'editar_profissional'
+  // Observação: o RPC espera apenas o id do profissional (p_id) e a especialidade (p_especialidade_id).
   const editProfissional = async (
     p_id: string | number,
-    p_id_perfil: number | null,
     p_id_especialidade: number | null
   ) => {
     const client = useSupabaseClient() as SupabaseClient;
+    // o RPC espera os nomes: p_especialidade_id e p_id
     const { data, error } = await client.rpc("editar_profissional", {
+      p_especialidade_id: p_id_especialidade,
       p_id,
-      p_id_perfil,
-      p_id_especialidade,
     } as any);
 
     if (error) {
@@ -151,8 +153,15 @@ export const useProfissionais = () => {
    */
   const deleteProfissional = async (p_id: string | number) => {
     const client = useSupabaseClient() as SupabaseClient;
+    // garantir que enviamos um number (bigint) para o RPC
+    const idNum = Number(p_id);
+    if (Number.isNaN(idNum)) {
+      console.error("ID do profissional inválido:", p_id);
+      return { message: "ID do profissional inválido.", success: false };
+    }
+
     const { data, error } = await client.rpc("deletar_profissional", {
-      p_id,
+      p_id: idNum,
     } as any);
 
     if (error) {

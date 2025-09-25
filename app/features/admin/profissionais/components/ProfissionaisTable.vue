@@ -37,7 +37,7 @@
               </button>
               <button
                 class="text-muted-foreground hover:text-destructive p-1"
-                @click="emits('delete-profissional', row[0])"
+                @click="emits('delete-profissional', row[0], row[1])"
               >
                 <TrashIcon class="w-4 h-4" />
               </button>
