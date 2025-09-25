@@ -6,8 +6,8 @@ export type Database = {
   public: {
     Profile: Profile;
     Especialidades: Especialidades;
-  }
-}
+  };
+};
 
 /**
  * Interface Profile que define a estrutura do perfil do usuário no banco de dados.
@@ -32,4 +32,24 @@ export interface Especialidades {
   created_at: string;
   updated_at: string | null;
   especialidade: string | null;
+}
+
+/**
+ * Interface para representar o retorno da RPC `get_profissionais`.
+ * Campos seguem o formato retornado pelo banco (snake_case conforme exemplo).
+ */
+export interface ProfissionalRPC {
+  nome_do_profissional: string | null;
+  especialidade_do_profissional: string | null;
+  id_do_profissional: number | null;
+  id_do_perfil: number | null;
+  id_da_especialidade: number | null;
+}
+
+/**
+ * Interface para representar o retorno da RPC `get_all_profiles_if_admin`.
+ */
+export interface UserProfileRPC {
+  id: number;
+  nome: string | null;
 }
