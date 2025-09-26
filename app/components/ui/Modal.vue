@@ -50,8 +50,8 @@
 
           <!-- Body -->
           <div class="bg-popover px-4 py-5 sm:p-6">
-            <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+            <div class="min-h-[100px] overflow-y-auto">
+              <div>
                 <slot></slot>
               </div>
             </div>

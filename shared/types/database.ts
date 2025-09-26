@@ -6,8 +6,23 @@ export type Database = {
   public: {
     Profile: Profile;
     Especialidades: Especialidades;
+    Cliente: Cliente;
   };
 };
+
+/**
+ * Interface Cliente que representa um cliente no sistema.
+ */
+export interface Cliente {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  email: string | null;
+  cpf: string | null;
+  nome: string | null;
+  telefone: string | null;
+  endereco: string | null;
+}
 
 /**
  * Interface Profile que define a estrutura do perfil do usuário no banco de dados.
