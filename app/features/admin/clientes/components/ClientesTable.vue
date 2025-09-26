@@ -62,21 +62,29 @@
         </tr>
       </thead>
       <tbody class="bg-card divide-y divide-border">
-        <tr v-for="cliente in clientes" :key="cliente.id" class="hover:bg-accent">
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+        <tr
+          v-for="cliente in clientes"
+          :key="cliente.id"
+          class="hover:bg-accent"
+        >
+          <td
+            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground"
+          >
             {{ cliente.id }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
+          <td
+            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground"
+          >
             {{ cliente.nome }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
             {{ cliente.email }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-            {{ cliente.cpf }}
+            {{ formatCPF(cliente.cpf) }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-            {{ cliente.telefone }}
+            {{ formatTelefone(cliente.telefone) }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
             {{ cliente.endereco }}
@@ -90,7 +98,7 @@
           <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
             <div class="flex items-center justify-start space-x-2">
               <!-- Ícone de Editar -->
-              <button class="text-blue-600 hover:text-blue-900">
+              <button class="text-blue-600 hover:text-blue-900" @click="$emit('edit-cliente', cliente)">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5"
@@ -103,7 +111,7 @@
                 </svg>
               </button>
               <!-- Ícone de Excluir -->
-              <button class="text-red-600 hover:text-red-900">
+              <button class="text-red-600 hover:text-red-900" @click="$emit('delete-cliente', cliente)">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5"
@@ -126,6 +134,36 @@
 </template>
 
 <script setup lang="ts">
+const formatCPF = (cpf: string | null) => {
+  if (!cpf) return "";
+  const cleaned = cpf.replace(/\D/g, "");
+  return cleaned
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+    .substring(0, 14);
+};
+
+const formatTelefone = (telefone: string | null) => {
+  if (!telefone) return "";
+  const cleaned = telefone.replace(/\D/g, "");
+  if (cleaned.length >= 11) {
+    return cleaned
+      .replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2.$3-$4")
+      .substring(0, 16);
+  } else if (cleaned.length >= 10) {
+    return cleaned
+      .replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3")
+      .substring(0, 14);
+  }
+  return "";
+};
+
+const emit = defineEmits<{
+  'edit-cliente': [cliente: Cliente];
+  'delete-cliente': [cliente: Cliente];
+}>();
+
 import type { Cliente } from "../../../../../shared/types/database";
 
 interface Props {
@@ -136,10 +174,8 @@ const props = defineProps<Props>();
 
 // Função para formatar a data
 const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return "N/A";
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR');
+  return date.toLocaleDateString("pt-BR");
 };
-
-
 </script>

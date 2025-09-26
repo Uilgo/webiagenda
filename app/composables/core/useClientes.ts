@@ -42,11 +42,49 @@ export const useClientes = () => {
     return data;
   };
 
+  // Função para atualizar um cliente existente no banco de dados.
+  const updateCliente = async (id: number, updatedCliente: Partial<Cliente>) => {
+    // Evite atualizar 'id', 'created_at' ou 'updated_at'
+    const { data, error } = await (supabase
+      .from("clientes")
+      .update as any)(updatedCliente)
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    // Refetch para atualizar a lista local
+    await fetchClientes();
+
+    return data;
+  };
+
+  const deleteCliente = async (id: number) => {
+    // Função para deletar um cliente existente no banco de dados.
+    const { error } = await supabase
+      .from("clientes")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    // Refetch para atualizar a lista local
+    await fetchClientes();
+
+    return { success: true };
+  };
+
   return {
     clientes,
     loading,
     error,
     fetchClientes,
     addCliente,
+    updateCliente,
+    deleteCliente,
   };
 };
