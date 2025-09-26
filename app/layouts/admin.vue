@@ -21,8 +21,8 @@
       <Header @toggle-sidebar="toggleSidebar" />
       
       <!-- Conteúdo Scrollável da Página -->
-      <div class="flex-1 overflow-y-auto">
-        <div class="p-6">
+      <div class="flex-1">
+        <div class="p-6 flex flex-col flex-1">
           <slot />
         </div>
       </div>

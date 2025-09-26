@@ -1,61 +1,61 @@
 <template>
   <div
-    class="overflow-x-auto rounded-lg border border-border shadow-sm p-4 overflow-hidden"
+    class="overflow-x-auto border border-border shadow-sm h-[calc(100vh-12rem)] overflow-y-auto"
   >
     <table class="min-w-full divide-y divide-border">
       <thead class="bg-muted">
         <tr>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             ID
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Nome
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Email
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             CPF
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Telefone
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Endereço
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Criado Em
           </th>
           <th
             scope="col"
-            class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Atualizado Em
           </th>
           <th
             scope="col"
-            class="relative px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+            class="sticky top-0 bg-muted px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
           >
             Ações
           </th>
@@ -98,7 +98,10 @@
           <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
             <div class="flex items-center justify-start space-x-2">
               <!-- Ícone de Editar -->
-              <button class="text-blue-600 hover:text-blue-900" @click="$emit('edit-cliente', cliente)">
+              <button
+                class="text-blue-600 hover:text-blue-900"
+                @click="$emit('edit-cliente', cliente)"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5"
@@ -111,7 +114,10 @@
                 </svg>
               </button>
               <!-- Ícone de Excluir -->
-              <button class="text-red-600 hover:text-red-900" @click="$emit('delete-cliente', cliente)">
+              <button
+                class="text-red-600 hover:text-red-900"
+                @click="$emit('delete-cliente', cliente)"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-5 w-5"
@@ -160,8 +166,8 @@ const formatTelefone = (telefone: string | null) => {
 };
 
 const emit = defineEmits<{
-  'edit-cliente': [cliente: Cliente];
-  'delete-cliente': [cliente: Cliente];
+  "edit-cliente": [cliente: Cliente];
+  "delete-cliente": [cliente: Cliente];
 }>();
 
 import type { Cliente } from "../../../../../shared/types/database";
