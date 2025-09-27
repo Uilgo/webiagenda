@@ -1,6 +1,11 @@
-import { ref, computed } from 'vue'
-import type { AuthError } from '@supabase/supabase-js'
-import type { LoginCredentials, AuthResponse, User } from '../../features/auth/types/auth'
+import { ref, computed } from "vue";
+import type { AuthError } from "@supabase/supabase-js";
+import type {
+  LoginCredentials,
+  AuthResponse,
+  User,
+} from "../../features/auth/types/auth";
+import { useUserStore } from "../../../stores/user";
 
 /**
  * Composable para gerenciamento de autenticação usando Supabase
@@ -8,88 +13,91 @@ import type { LoginCredentials, AuthResponse, User } from '../../features/auth/t
  */
 export const useAuth = () => {
   // Cliente Supabase e usuário reativo
-  const supabase = useSupabaseClient()
-  const supabaseUser = useSupabaseUser()
-  const router = useRouter()
+  const supabase = useSupabaseClient();
+  const supabaseUser = useSupabaseUser();
+  const router = useRouter();
 
   // Estados reativos para controle de loading e erros
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
 
   // Computed para verificar se o usuário está autenticado
-  const isAuthenticated = computed(() => !!supabaseUser.value)
+  const isAuthenticated = computed(() => !!supabaseUser.value);
 
   // Computed para obter dados do usuário de forma segura com tipagem customizada
   const user = computed((): User | null => {
-    if (!supabaseUser.value) return null
-    
+    if (!supabaseUser.value) return null;
+
     // Retorna o usuário do Supabase com tipagem customizada
-    return supabaseUser.value as User
-  })
+    return supabaseUser.value as User;
+  });
 
   // Computed para obter dados do usuário de forma segura (mantido para compatibilidade)
-  const currentUser = computed(() => user.value)
+  const currentUser = computed(() => user.value);
 
   /**
    * Limpa erros de autenticação
    */
   const clearError = () => {
-    error.value = null
-  }
+    error.value = null;
+  };
 
   /**
    * Realiza o login do usuário
    * @param credentials - Credenciais de login (email, senha, lembrar)
    * @returns Promise com resultado da operação
    */
-  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<AuthResponse> => {
     try {
-      isLoading.value = true
-      error.value = null
+      isLoading.value = true;
+      error.value = null;
 
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      })
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email: credentials.email,
+          password: credentials.password,
+        }
+      );
 
       if (authError) {
         // Tratamento de erros específicos do Supabase
-        const errorMessage = getAuthErrorMessage(authError)
-        error.value = errorMessage
-        
+        const errorMessage = getAuthErrorMessage(authError);
+        error.value = errorMessage;
+
         return {
           success: false,
-          error: errorMessage
-        }
+          error: errorMessage,
+        };
       }
 
       if (data.user) {
         // Login bem-sucedido - redireciona para dashboard administrativo
-        await router.push('/admin/dashboard')
-        
+        await router.push("/admin/dashboard");
+
         return {
           success: true,
-          user: data.user
-        }
+          user: data.user,
+        };
       }
 
       return {
         success: false,
-        error: 'Erro inesperado durante o login'
-      }
-
+        error: "Erro inesperado durante o login",
+      };
     } catch (err) {
-      const errorMessage = 'Erro de conexão. Tente novamente.'
-      error.value = errorMessage
-      
+      const errorMessage = "Erro de conexão. Tente novamente.";
+      error.value = errorMessage;
+
       return {
         success: false,
-        error: errorMessage
-      }
+        error: errorMessage,
+      };
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
 
   /**
    * Realiza o logout do usuário
@@ -97,40 +105,43 @@ export const useAuth = () => {
    */
   const logout = async (): Promise<AuthResponse> => {
     try {
-      isLoading.value = true
-      error.value = null
+      isLoading.value = true;
+      error.value = null;
 
-      const { error: authError } = await supabase.auth.signOut()
+      const { error: authError } = await supabase.auth.signOut();
 
       if (authError) {
-        const errorMessage = 'Erro ao fazer logout. Tente novamente.'
-        error.value = errorMessage
-        
+        const errorMessage = "Erro ao fazer logout. Tente novamente.";
+        error.value = errorMessage;
+
         return {
           success: false,
-          error: errorMessage
-        }
+          error: errorMessage,
+        };
       }
+
+      // Limpa o store do usuário após logout bem-sucedido
+      const userStore = useUserStore();
+      userStore.clearUser();
 
       // Logout bem-sucedido - redireciona para página de autenticação
-      await router.push('/auth/login')
-      
-      return {
-        success: true
-      }
+      await router.push("/auth/login");
 
+      return {
+        success: true,
+      };
     } catch (err) {
-      const errorMessage = 'Erro de conexão durante o logout.'
-      error.value = errorMessage
-      
+      const errorMessage = "Erro de conexão durante o logout.";
+      error.value = errorMessage;
+
       return {
         success: false,
-        error: errorMessage
-      }
+        error: errorMessage,
+      };
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
-  }
+  };
 
   /**
    * Converte erros do Supabase em mensagens amigáveis
@@ -139,16 +150,16 @@ export const useAuth = () => {
    */
   const getAuthErrorMessage = (authError: AuthError): string => {
     switch (authError.message) {
-      case 'Invalid login credentials':
-        return 'Email ou senha incorretos'
-      case 'Email not confirmed':
-        return 'Email não confirmado. Verifique sua caixa de entrada.'
-      case 'Unable to validate email address: invalid format':
-        return 'Formato de email inválido'
+      case "Invalid login credentials":
+        return "Email ou senha incorretos";
+      case "Email not confirmed":
+        return "Email não confirmado. Verifique sua caixa de entrada.";
+      case "Unable to validate email address: invalid format":
+        return "Formato de email inválido";
       default:
-        return authError.message || 'Erro de autenticação'
+        return authError.message || "Erro de autenticação";
     }
-  }
+  };
 
   // Retorna todas as funcionalidades e estados do composable
   return {
@@ -163,6 +174,6 @@ export const useAuth = () => {
     logout,
 
     // Utilitários
-    clearError
-  }
-}
+    clearError,
+  };
+};

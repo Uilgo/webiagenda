@@ -6,7 +6,7 @@
   >
     <form id="profissional-form" @submit.prevent="save" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
+        <label class="block text-sm font-medium text-gray-700 mb-2 text-left"
           >Usuário (Perfil)</label
         >
 
@@ -62,7 +62,7 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2"
+        <label class="block text-sm font-medium text-gray-700 mb-2 text-left"
           >Especialidade</label
         >
 

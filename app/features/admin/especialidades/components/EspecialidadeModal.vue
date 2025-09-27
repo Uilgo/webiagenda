@@ -8,7 +8,7 @@
       <div>
         <label
           for="especialidade"
-          class="block text-sm font-medium text-gray-700 mb-2"
+          class="block text-left text-sm font-medium text-gray-700 mb-2"
           >Nome da Especialidade</label
         >
         <Input
