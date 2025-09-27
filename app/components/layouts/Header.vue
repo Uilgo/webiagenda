@@ -1,6 +1,6 @@
 <template>
   <header class="sticky top-0 z-40 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div class="container flex px-6 h-20 items-center">
+    <div class="flex justify-between px-6 h-20 items-center">
       <!-- Ícone de Sidebar (lado esquerdo) -->
       <button
         type="button"

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col items-center justify-center h-full border border-opacity-50"
+    class="flex flex-col items-center justify-center h-full border border-opacity-50 rounded-tl-lg rounded-tr-lg bg-gray-100"
   >
     <div class="text-lg font-semibold text-gray-800">{{ date.getDate() }}</div>
     <div class="text-xs text-gray-500 uppercase tracking-wide">
