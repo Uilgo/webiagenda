@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { User } from "@supabase/supabase-js";
-import type { Profile } from "../shared/types/database";
+import type { Profile, ProfissionalRPC } from "../shared/types/database";
 import { useAgendamentoStore } from "./agendamento";
 
 export const useUserStore = defineStore("user", () => {
@@ -53,7 +53,7 @@ export const useUserStore = defineStore("user", () => {
       }
     }
   };
-  
+
   const clearUser = () => {
     user.value = null;
     profile.value = null;

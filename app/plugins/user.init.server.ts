@@ -1,5 +1,5 @@
 import type { User } from "@supabase/supabase-js";
-import type { Profile } from "../../shared/types/database";
+import type { Profile, ProfissionalRPC } from "../../shared/types/database";
 import { useUserStore } from "../../stores/user";
 import { useAgendamentoStore } from "../../stores/agendamento";
 
@@ -24,7 +24,7 @@ export default defineNuxtPlugin(async () => {
         console.error("Erro ao buscar profile no servidor:", profileError);
       } else if (profileData) {
         userStore.setProfile(profileData as Profile);
-    
+
         // --- Hidratar profissionais e profissional atual ---
         try {
           const profileId = (profileData as Profile).id ?? null;
@@ -43,25 +43,32 @@ export default defineNuxtPlugin(async () => {
                 const profsArray = Array.isArray(profData)
                   ? (profData as any[])
                   : [profData as any];
-    
+
                 // Normaliza para ProfissionalRPC
-                const profissionaisNormalizados: ProfissionalRPC[] = profsArray.map((p: any) => ({
-                  nome_do_profissional: p.nome_do_profissional ?? p.nome ?? null,
-                  especialidade_do_profissional: p.especialidade_do_profissional ?? p.especialidade ?? null,
-                  id_do_profissional: p.id_do_profissional ?? p.id ?? null,
-                  id_do_perfil: p.id_do_perfil ?? p.id_perfil ?? null,
-                  id_da_especialidade: p.id_da_especialidade ?? p.id_especialidade ?? null,
-                }));
-    
+                const profissionaisNormalizados: ProfissionalRPC[] =
+                  profsArray.map((p: any) => ({
+                    nome_do_profissional:
+                      p.nome_do_profissional ?? p.nome ?? null,
+                    especialidade_do_profissional:
+                      p.especialidade_do_profissional ??
+                      p.especialidade ??
+                      null,
+                    id_do_profissional: p.id_do_profissional ?? p.id ?? null,
+                    id_do_perfil: p.id_do_perfil ?? p.id_perfil ?? null,
+                    id_da_especialidade:
+                      p.id_da_especialidade ?? p.id_especialidade ?? null,
+                  }));
+
                 // Hidrata a lista de profissionais no store
                 userStore.setProfissionais(profissionaisNormalizados);
-    
-                const found = profissionaisNormalizados.find((p: ProfissionalRPC) => {
-                  return Number(p.id_do_perfil) === Number(profileId);
-                });
-    
+
+                // Define o profissional no SSR para manter consistência de hidratação
+                const found = profissionaisNormalizados.find(
+                  (p: ProfissionalRPC) => {
+                    return Number(p.id_do_perfil) === Number(profileId);
+                  }
+                );
                 if (found) {
-                  // Define o profissional atual no store para SSR
                   userStore.setProfissional(found);
                 }
               } catch (e) {
@@ -76,21 +83,22 @@ export default defineNuxtPlugin(async () => {
         } catch (e) {
           console.error("Erro ao hidratar profissionais no servidor:", e);
         }
-    
+
         // --- Tentar hidratar agendamentos para o profissional correspondente ---
+        // Nota: Como profissional não é definido no SSR, não hidrata agendamentos aqui; client fará
         try {
           const agendamentoStore = useAgendamentoStore();
-          const profissionalId = userStore.profissional?.id_do_profissional ?? null;
+          const profissionalId =
+            userStore.profissional?.id_do_profissional ?? null;
           if (profissionalId) {
-            const { data: agendamentos, error: agError } =
-              await supabase
-                .from("agendamentos")
-                .select("*")
-                .eq("profissionais_id", profissionalId)
-                .eq("cancelado", false)
-                .order("data", { ascending: true })
-                .order("hora_inicio", { ascending: true });
-    
+            const { data: agendamentos, error: agError } = await supabase
+              .from("agendamentos")
+              .select("*")
+              .eq("profissionais_id", profissionalId)
+              .eq("cancelado", false)
+              .order("data", { ascending: true })
+              .order("hora_inicio", { ascending: true });
+
             if (!agError && agendamentos) {
               agendamentoStore.setAgendamentosForProfissional(
                 Number(profissionalId),

@@ -19,7 +19,9 @@
               class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
             >
               <span class="text-blue-600 font-semibold text-xs">
-                {{ userStore.profissional.nome_do_profissional?.charAt(0) || "P" }}
+                {{
+                  userStore.profissional.nome_do_profissional?.charAt(0) || "P"
+                }}
               </span>
             </div>
             <div class="flex-1 min-w-0">
@@ -36,10 +38,16 @@
             />
           </div>
           <div
-            v-else
+            v-else-if="userStore.profissionais.length > 0"
             class="flex items-center justify-center p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 w-full"
           >
             Nenhum profissional selecionado
+          </div>
+          <div
+            v-else
+            class="flex items-center justify-center p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 w-full"
+          >
+            Carregando profissional...
           </div>
         </div>
       </template>
@@ -139,6 +147,16 @@ const filteredProfissionais = computed(() => {
 onMounted(async () => {
   if (userStore.profissionais.length === 0) {
     await fetchProfissionais();
+  }
+  const savedId = localStorage.getItem("selectedProfissionalId");
+  if (savedId) {
+    const id = parseInt(savedId, 10);
+    const savedProf = userStore.profissionais.find(
+      (p) => p.id_do_profissional === id
+    );
+    if (savedProf) {
+      userStore.setProfissional(savedProf);
+    }
   }
 });
 
