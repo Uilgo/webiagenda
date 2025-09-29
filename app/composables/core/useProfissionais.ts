@@ -10,70 +10,79 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  */
 export const useProfissionais = () => {
   const profissionais = ref<ProfissionalRPC[]>([]);
+  const isFetching = ref(false);
+  const fetched = ref(false);
+  const fetchPromise = ref<Promise<void> | null>(null);
 
-  const fetchProfissionais = async () => {
+  const fetchProfissionais = async (force = false) => {
+    // início da operação
+    // Evita chamadas duplicadas: se já buscamos e não foi solicitado force, retorna cache
+    if (!force && fetched.value && profissionais.value.length > 0) {
+      return profissionais.value;
+    }
+
+    // Se já estiver em andamento, aguarda a promise em progresso
+    if (isFetching.value && fetchPromise.value) {
+      await fetchPromise.value;
+      return profissionais.value;
+    }
+
     const client = useSupabaseClient() as SupabaseClient;
 
-    const { data, error } = await client.rpc("get_profissionais");
+    isFetching.value = true;
+    fetchPromise.value = (async () => {
+      // Executa a RPC get_profissionais no cliente quando o composable for chamado no client.
+      // Não logamos informações de ambiente aqui para evitar poluição do console.
+      const { data, error } = await client.rpc("get_profissionais");
 
-    if (error) {
-      console.error("Erro ao buscar profissionais:", error);
-      throw error;
-    }
+      if (error) {
+        console.error("Erro ao buscar profissionais:", error);
+        throw error;
+      }
 
-    // Normaliza o retorno para o tipo esperado
+      // Normaliza o retorno para o tipo esperado
+      try {
+        if (!data) {
+          profissionais.value = [];
+          return;
+        }
+
+        // Supabase pode retornar tipos any; tentamos mapear para ProfissionalRPC
+        if (Array.isArray(data)) {
+          profissionais.value = data.map((d: any) => ({
+            nome_do_profissional: d.nome_do_profissional ?? d.nome ?? null,
+            especialidade_do_profissional:
+              d.especialidade_do_profissional ?? d.especialidade ?? null,
+            id_do_profissional: d.id_do_profissional ?? d.id ?? null,
+            id_do_perfil: d.id_do_perfil ?? d.id_perfil ?? null,
+            id_da_especialidade:
+              d.id_da_especialidade ?? d.id_especialidade ?? null,
+          })) as ProfissionalRPC[];
+        } else if (typeof data === "object") {
+          // Caso venha um objeto único ou formato inesperado
+          profissionais.value = [data as ProfissionalRPC];
+        } else {
+          profissionais.value = [];
+        }
+      } catch (e) {
+        console.error(
+          "Erro ao normalizar retorno de get_profissionais:",
+          e,
+          data
+        );
+        profissionais.value = [];
+      }
+    })();
+
     try {
-      if (!data) {
-        profissionais.value = [];
-        return;
-      }
-
-      // Supabase pode retornar tipos any; tentamos mapear para ProfissionalRPC
-      if (Array.isArray(data)) {
-        profissionais.value = data.map((d: any) => ({
-          nome_do_profissional: d.nome_do_profissional ?? d.nome ?? null,
-          especialidade_do_profissional:
-            d.especialidade_do_profissional ?? d.especialidade ?? null,
-          id_do_profissional: d.id_do_profissional ?? d.id ?? null,
-          id_do_perfil: d.id_do_perfil ?? d.id_perfil ?? null,
-          id_da_especialidade:
-            d.id_da_especialidade ?? d.id_especialidade ?? null,
-        })) as ProfissionalRPC[];
-      } else if (typeof data === "object") {
-        // Caso venha um objeto único ou formato inesperado
-        profissionais.value = [data as ProfissionalRPC];
-      } else {
-        profissionais.value = [];
-      }
-    } catch (e) {
-      console.error(
-        "Erro ao normalizar retorno de get_profissionais:",
-        e,
-        data
-      );
-      profissionais.value = [];
+      await fetchPromise.value;
+      fetched.value = true;
+      return profissionais.value;
+    } finally {
+      isFetching.value = false;
+      fetchPromise.value = null;
     }
   };
-  // --- helper para buscar especialidades (exposto dentro de useProfissionais para UI de profissionais)
-  const especialidades = ref<Especialidades[]>([]);
-
-  const fetchEspecialidades = async () => {
-    const client = useSupabaseClient();
-    const { data, error } = await (client.from("especialidades") as any).select(
-      "*"
-    );
-
-    if (error) {
-      console.error(
-        "Erro ao buscar especialidades (via useProfissionais):",
-        error
-      );
-      throw error;
-    }
-
-    especialidades.value = data || [];
-  };
-
   /**
    * Insere um profissional via RPC 'inserir_profissional'
    */
@@ -189,10 +198,10 @@ export const useProfissionais = () => {
   return {
     profissionais,
     fetchProfissionais,
+    isFetching,
+    fetched,
     insertProfissional,
     editProfissional,
     deleteProfissional,
-    especialidades,
-    fetchEspecialidades,
   };
 };

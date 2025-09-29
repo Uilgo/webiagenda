@@ -14,6 +14,7 @@
         <div
           class="fixed inset-0 bg-black/50 transition-opacity"
           aria-hidden="true"
+          @click="handleOverlayClick"
         ></div>
 
         <!-- Modal panel -->
@@ -68,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from "vue";
 // import { defineProps, defineEmits } from "vue";
 
 const props = defineProps<{
@@ -82,6 +84,26 @@ const emit = defineEmits<{
 const close = () => {
   emit("update:modelValue", false);
 };
+
+const handleOverlayClick = (event: MouseEvent) => {
+  if (event.target === event.currentTarget) {
+    close();
+  }
+};
+
+const handleEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    close();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("keydown", handleEscape);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleEscape);
+});
 
 // Para fechar o modal a partir do componente pai, você deve emitir o evento 'update:modelValue' com o valor 'false'.
 // Exemplo: <Modal :modelValue="isModalOpen" @update:modelValue="isModalOpen = $event">

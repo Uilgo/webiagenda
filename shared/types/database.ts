@@ -4,9 +4,40 @@
  */
 export type Database = {
   public: {
-    Profile: Profile;
-    Especialidades: Especialidades;
-    Cliente: Cliente;
+    Tables: {
+      profiles: {
+        Row: Profile;
+        Insert: Omit<Profile, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      especialidades: {
+        Row: Especialidades;
+        Insert: Omit<Especialidades, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Especialidades, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      clientes: {
+        Row: Cliente;
+        Insert: Omit<Cliente, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Cliente, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      agendamentos: {
+        Row: Agendamento;
+        Insert: Omit<Agendamento, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Agendamento, 'id' | 'created_at' | 'updated_at'>>;
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 };
 
@@ -67,4 +98,26 @@ export interface ProfissionalRPC {
 export interface UserProfileRPC {
   id: number;
   nome: string | null;
+}
+
+/**
+ * Interface Agendamento que define a estrutura da tabela agendamentos no banco de dados.
+ * Inclui campos como ID, datas de criação e atualização, IDs de usuário, profissional e cliente,
+ * data, horários, título, descrição, status de cancelamento e data de cancelamento.
+ */
+export interface Agendamento {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  user_id: string | null;
+  profissionais_id: number | null;
+  cliente_id: number | null;
+  data: string | null;
+  hora_inicio: string | null;
+  hora_fim: string | null;
+  titulo: string | null;
+  descricao: string | null;
+  cancelado: boolean | null;
+  cancelado_as: string | null;
+  cor: string | null;
 }

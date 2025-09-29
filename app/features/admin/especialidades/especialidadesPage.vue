@@ -19,7 +19,7 @@
       </div>
     </div>
     <EspecialidadeTable
-      :especialidades="especialidades"
+      :especialidades="especialidadesComputed"
       @edit-especialidade="openEditModal"
       @delete-especialidade="openDeleteModal"
     />
@@ -48,8 +48,12 @@ import EspecialidadeTable from "./components/EspecialidadeTable.vue";
 import EspecialidadeModal from "./components/EspecialidadeModal.vue";
 import { useUserStore } from "../../../../stores/user";
 import { ArrowPathIcon } from "@heroicons/vue/24/outline";
+import { useEspecialidades } from "../../../composables/core/useEspecialidades";
+import DeleteEspecialidadeModal from "./components/DeleteEspecialidadeModal.vue";
 
 const userStore = useUserStore();
+
+const { especialidades, fetchEspecialidades } = useEspecialidades();
 
 const showModal = ref(false);
 const especialidadeId = ref<string | null>(null);
@@ -96,23 +100,7 @@ const openEditModal = async (id: string) => {
   }
 };
 
-const { data: especialidadesData, refresh: fetchEspecialidades } =
-  await useAsyncData("especialidades", async () => {
-    const client = useSupabaseClient();
-    const { data, error } = await client.from("especialidades").select("*");
-
-    if (error) {
-      console.error("Erro ao buscar especialidades:", error);
-      throw error;
-    }
-
-    return data || [];
-  });
-
-import { ref as vueRef } from "vue";
-import DeleteEspecialidadeModal from "./components/DeleteEspecialidadeModal.vue";
-
-const isRefreshing = vueRef(false);
+const isRefreshing = ref(false);
 
 const showDeleteModal = ref(false);
 const deleteId = ref<string | null>(null);
@@ -124,10 +112,10 @@ const openDeleteModal = (id: string, name?: string | null) => {
   showDeleteModal.value = true;
 };
 
-const handleDeleted = () => {
+const handleDeleted = async () => {
   showDeleteModal.value = false;
   // refresh list
-  fetchEspecialidades();
+  await fetchEspecialidades();
 };
 
 const refreshEspecialidades = async () => {
@@ -140,10 +128,13 @@ const refreshEspecialidades = async () => {
   }
 };
 
-const handleSaved = () => {
+const handleSaved = async () => {
   showModal.value = false;
-  fetchEspecialidades();
+  await fetchEspecialidades();
 };
 
-const especialidades = computed(() => especialidadesData.value || []);
+const especialidadesComputed = computed(() => especialidades.value || []);
+
+// Fetch on mount
+await fetchEspecialidades();
 </script>

@@ -8,6 +8,9 @@
       :end="appt.end"
       :title="appt.title"
       :description="appt.description"
+      :color="appt.color"
+      :agendamento="appt.agendamento"
+      @edit="$emit('edit-agendamento', $event)"
     />
     <div
       v-for="hora in Array.from({ length: 15 }, (_, i) => 8 + i)"
@@ -24,66 +27,38 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import type { Agendamento } from "../../../../../shared/types/database";
 import SlotAgendamento from "./SlotAgendamento.vue";
 const props = defineProps<{
   data: Date;
+  allAgendamentos: Agendamento[];
 }>();
 
-const appointments = [
-  {
-    start: new Date("2025-09-28T08:00:00").getTime(),
-    end: new Date("2025-09-28T09:00:00").getTime(),
-    title: "Consulta João Silva",
-    description: "Check-up anual e exames de rotina",
-  },
-  {
-    start: new Date("2025-09-28T14:30:00").getTime(),
-    end: new Date("2025-09-28T15:30:00").getTime(),
-    title: "Reunião Maria Oliveira",
-    description: "Discussão sobre tratamento ortodôntico",
-  },
-  {
-    start: new Date("2025-09-29T10:00:00").getTime(),
-    end: new Date("2025-09-29T11:30:00").getTime(),
-    title: "Sessão Pedro Santos",
-    description: "Acompanhamento pós-cirurgia",
-  },
-  {
-    start: new Date("2025-09-30T16:00:00").getTime(),
-    end: new Date("2025-09-30T17:00:00").getTime(),
-    title: "Avaliação Ana Costa",
-    description: "Consulta inicial para implantes",
-  },
-  {
-    start: new Date("2025-10-01T09:15:00").getTime(),
-    end: new Date("2025-10-01T10:15:00").getTime(),
-    title: "Limpeza Lucas Ferreira",
-    description: "Higienização e profilaxia",
-  },
-  {
-    start: new Date("2025-10-02T13:00:00").getTime(),
-    end: new Date("2025-10-02T14:45:00").getTime(),
-    title: "Emergência Sofia Ramos",
-    description: "Dor aguda e tratamento de urgência",
-  },
-  {
-    start: new Date("2025-10-03T11:00:00").getTime(),
-    end: new Date("2025-10-03T12:00:00").getTime(),
-    title: "Manutenção Gabriel Lima",
-    description: "Ajuste de aparelho ortodôntico",
-  },
-  {
-    start: new Date("2025-10-04T18:30:00").getTime(),
-    end: new Date("2025-10-04T19:30:00").getTime(),
-    title: "Consulta Final Isabel Souza",
-    description: "Encerramento do tratamento",
-  },
-] as const;
-
-const dayAppointments = computed(() =>
-  appointments.filter((appt) => {
-    const apptDate = new Date(appt.start);
-    return apptDate.toDateString() === props.data.toDateString();
-  })
-);
+const dayAppointments = computed(() => {
+  const year = props.data.getFullYear();
+  const month = props.data.getMonth();
+  const day = props.data.getDate();
+  const targetDateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
+    day
+  ).padStart(2, "0")}`;
+  return props.allAgendamentos
+    .filter((appt) => appt.data === targetDateStr && !appt.cancelado)
+    .map((appt) => {
+      const [startH, startM] = (appt.hora_inicio || "00:00")
+        .split(":")
+        .map(Number);
+      const [endH, endM] = (appt.hora_fim || "00:00").split(":").map(Number);
+      const startDate = new Date(year, month, day, startH, startM);
+      const endDate = new Date(year, month, day, endH, endM);
+      return {
+        id: appt.id,
+        agendamento: appt,
+        start: startDate.getTime(),
+        end: endDate.getTime(),
+        title: appt.titulo || "",
+        description: appt.descricao || "",
+        color: appt.cor || "#3b82f6",
+      };
+    });
+});
 </script>
