@@ -1,5 +1,8 @@
 <template>
-  <div class="flex flex-col items-center justify-center">
+  <div
+    class="flex flex-col items-center justify-center cursor-pointer"
+    @click="$emit('open-modal')"
+  >
     <h2 class="text-xl font-bold text-gray-800">
       {{ profissional?.nome_do_profissional || "Nome não disponível" }}
     </h2>
@@ -13,55 +16,61 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref, watch } from "vue";
 import type { ProfissionalRPC } from "../../../../../shared/types/database";
 import type { Profile } from "../../../../../shared/types/database";
 import { useUserStore } from "../../../../../stores/user";
-import { nextTick } from "vue";
 import { useProfissionais } from "../../../../composables/core/useProfissionais";
 
-const user = useSupabaseUser();
-const userStore = useUserStore();
+defineEmits<{
+  (e: "open-modal"): void;
+}>();
 
+const userStore = useUserStore();
 const profissionaisComposable = useProfissionais();
 
-const { data: profissional } = await useAsyncData("user-profile", async () => {
-  if (!user.value || !userStore.profile) {
-    await nextTick();
-    if (!userStore.profile) {
-      return null;
-    }
+const profissional = ref<ProfissionalRPC | null>(null);
+
+const updateProfissional = () => {
+  if (userStore.profissional) {
+    profissional.value = userStore.profissional;
+    return;
   }
 
-  // Usa o profile do store
-  const profileData = userStore.profile;
-
-  // Tenta obter profissionais do cache/composable sem forçar
-  await profissionaisComposable.fetchProfissionais();
-
-  // Se outra chamada estiver em andamento, aguardamos um tick simples
-  if (profissionaisComposable.isFetching?.value) {
-    await nextTick();
+  if (!userStore.profile || profissionaisComposable.profissionais.value.length === 0) {
+    profissional.value = null;
+    return;
   }
 
-  let profissionaisList = profissionaisComposable.profissionais.value;
-
-  // Se a lista ainda estiver vazia, tenta forçar um refetch (ex.: primeira carga)
-  if (
-    (!profissionaisList || profissionaisList.length === 0) &&
-    typeof profissionaisComposable.fetchProfissionais === "function"
-  ) {
-    await profissionaisComposable.fetchProfissionais(true);
-    profissionaisList = profissionaisComposable.profissionais.value;
-  }
-
-  if (!profissionaisList || profissionaisList.length === 0) {
-    return null;
-  }
-
-  // Filtra pelo id do profile
-  const matchingProfissional = profissionaisList.find(
-    (p: ProfissionalRPC) => p.id_do_perfil === profileData.id
+  const matchingProfissional = profissionaisComposable.profissionais.value.find(
+    (p: ProfissionalRPC) => p.id_do_perfil === userStore.profile?.id
   );
-  return matchingProfissional || profissionaisList[0] || null;
+  profissional.value = matchingProfissional || null;
+};
+
+onMounted(async () => {
+  await profissionaisComposable.fetchProfissionais(true);
+  updateProfissional();
 });
+
+watch(
+  () => userStore.profissional,
+  () => {
+    updateProfissional();
+  }
+);
+
+watch(
+  () => userStore.profile,
+  () => {
+    updateProfissional();
+  }
+);
+
+watch(
+  () => profissionaisComposable.profissionais.value.length,
+  () => {
+    updateProfissional();
+  }
+);
 </script>

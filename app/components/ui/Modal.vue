@@ -29,6 +29,7 @@
               {{ title }}
             </h3>
             <button
+              v-if="showClose"
               type="button"
               class="text-muted-foreground hover:text-foreground rounded-md p-2 hover:bg-accent"
               @click="close"
@@ -69,17 +70,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, computed } from "vue";
 // import { defineProps, defineEmits } from "vue";
 
 const props = defineProps<{
   modelValue: boolean;
   title: string;
+  showClose?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
 }>();
+
+const showClose = computed(() => props.showClose ?? true);
 
 const close = () => {
   emit("update:modelValue", false);

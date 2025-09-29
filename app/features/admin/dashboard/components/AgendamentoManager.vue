@@ -4,7 +4,7 @@
     <div class="header flex flex-col gap-4 sticky top-0 z-20 bg-background">
       <div class="flex items-center justify-between">
         <SemanaControlador />
-        <UserProfileDisplay />
+        <UserProfileDisplay @open-modal="isProfissionaisModalOpen = true" />
         <Button variant="primary" size="md" @click="isModalOpen = true"
           >Novo Agendamento</Button
         >
@@ -39,14 +39,18 @@
     :is-edicao="isEdicao"
     :initial-agendamento="selectedAgendamento"
   />
+  <ProfissionaisModal
+    v-model="isProfissionaisModalOpen"
+    @select="handleSelectProfissional"
+  />
 </template>
-
 <script setup lang="ts">
 import { onMounted, ref, watch, computed, nextTick } from "vue";
 import { useSupabaseClient } from "#imports";
 import type {
   Agendamento,
   Cliente,
+  ProfissionalRPC,
 } from "../../../../../shared/types/database";
 import { useAgendamento } from "../../../../composables/core/useAgendamento";
 import { useToast } from "../../../../composables/ui/useToast";
@@ -59,6 +63,7 @@ import ListaDias from "./ListaDias.vue";
 import ReguaHorarios from "./ReguaHorarios.vue";
 import ItemAgendamento from "./ItemAgendamento.vue";
 import AgendamentoModal from "./AgendamentoModal.vue";
+import ProfissionaisModal from "./ProfissionaisModal.vue";
 
 import { useClientes } from "../../../../composables/core/useClientes";
 
@@ -72,11 +77,14 @@ const {
   fetchAllAgendamentosByProfissional,
   inserirAgendamento,
   editarAgendamento,
-} = useAgendamento();
+  deletarAgendamento,
+  cancelarAgendamento,
+} = useAgendamento() as any;
 const isModalOpen = ref(false);
 const isEdicao = ref(false);
 const selectedAgendamento = ref<any | null>(null);
 const allAgendamentos = ref<Agendamento[]>([]);
+const isProfissionaisModalOpen = ref(false);
 // fullAgendamentos lido preferencialmente da store (pode ser hidratado no SSR)
 const fullAgendamentosComputed = computed<Agendamento[]>(() => {
   // Prioridade: userStore.profissional -> store.agendamentosByProfissional
@@ -170,7 +178,7 @@ onMounted(async () => {
     // experiência do usuário pois a UI já usa os dados hidratados.
     try {
       // não aguardamos - roda em background
-      fetchAllAgendamentosByProfissional(pid, true).catch((e) => {
+      fetchAllAgendamentosByProfissional(pid, true).catch((e: any) => {
         console.error("Erro no fetch client-side forçado de agendamentos:", e);
       });
     } catch (e) {
@@ -329,7 +337,7 @@ const handleSaveAgendamento = async (formData: {
       // Dispara um refetch em background para re-sincronizar com o servidor
       try {
         fetchAllAgendamentosByProfissional(profissionalId.value, true).catch(
-          (e) => {
+          (e: any) => {
             console.error("Erro no refetch background de agendamentos:", e);
           }
         );
@@ -391,11 +399,11 @@ const handleSaveAgendamento = async (formData: {
   }
 };
 
-// Marca localmente um agendamento como cancelado (sem chamada à API aqui)
+// Cancela um agendamento: tenta persistir no backend; em caso de erro de rede
+// faz uma tentativa de retry rápida antes de aplicar apenas a marcação local.
 const handleCancelAgendamento = async (agendamentoId: number) => {
   try {
-    // procura o agendamento na store (pelo profissional atual ou em qualquer profissional)
-    let pid = profissionalId.value;
+    let pid: number | null = profissionalId.value;
     let found: Agendamento | undefined;
 
     if (pid) {
@@ -404,7 +412,6 @@ const handleCancelAgendamento = async (agendamentoId: number) => {
     }
 
     if (!found) {
-      // busca em todas as chaves
       const map = agendamentoStore.agendamentosByProfissional;
       for (const key of Object.keys(map)) {
         const arr = map[Number(key)] || [];
@@ -422,28 +429,158 @@ const handleCancelAgendamento = async (agendamentoId: number) => {
       return;
     }
 
-    // marca localmente
-    const updated = (
-      agendamentoStore.getAgendamentosForProfissional(pid) || []
-    ).map((a: Agendamento) =>
-      a.id === agendamentoId
-        ? { ...a, cancelado: true, cancelado_em: new Date().toISOString() }
-        : a
+    // tenta persistir no backend
+    try {
+      const updated = await cancelarAgendamento(agendamentoId);
+
+      // atualiza a store com retorno do servidor
+      const list = agendamentoStore.getAgendamentosForProfissional(pid) || [];
+      const newList = (list as Agendamento[]).map((a) =>
+        a.id === agendamentoId
+          ? { ...a, cancelado: true, cancelado_as: updated.cancelado_as }
+          : a
+      );
+      agendamentoStore.setAgendamentosForProfissional(
+        pid,
+        newList as Agendamento[]
+      );
+
+      cache.value.clear();
+      loadAgendamentosForWeek();
+      toast.success("Agendamento cancelado");
+      isModalOpen.value = false;
+      isEdicao.value = false;
+      selectedAgendamento.value = null;
+      return;
+    } catch (err: any) {
+      // Se o servidor devolveu que nenhuma linha foi atualizada, provavelmente RLS
+      if (err && err.code === "NO_ROWS_UPDATED") {
+        console.error(
+          "Cancelamento bloqueado por RLS/nenhuma linha atualizada:",
+          err
+        );
+        toast.error(
+          "Permissão negada ao cancelar agendamento. Verifique políticas RLS ou se o registro ainda existe."
+        );
+        return;
+      }
+
+      // Logs detalhados para debug de falhas de rede/cliente
+      console.error("Erro ao cancelar agendamento (primeira tentativa):", err);
+
+      // Tenta uma segunda tentativa rápida antes de aplicar fallback local
+      try {
+        const retry = await cancelarAgendamento(agendamentoId);
+        // se funcionar na segunda tentativa, aplica o retorno do servidor
+        const list = agendamentoStore.getAgendamentosForProfissional(pid) || [];
+        const newList = (list as Agendamento[]).map((a) =>
+          a.id === agendamentoId
+            ? { ...a, cancelado: true, cancelado_as: retry.cancelado_as }
+            : a
+        );
+        agendamentoStore.setAgendamentosForProfissional(
+          pid,
+          newList as Agendamento[]
+        );
+        cache.value.clear();
+        loadAgendamentosForWeek();
+        toast.success("Agendamento cancelado (após retry)");
+        isModalOpen.value = false;
+        isEdicao.value = false;
+        selectedAgendamento.value = null;
+        return;
+      } catch (err2: any) {
+        console.error("Retry de cancelamento falhou:", err2);
+      }
+
+      // fallback local se ambas tentativas falharem (rede temporariamente indisponível)
+      const updatedLocal = (
+        agendamentoStore.getAgendamentosForProfissional(pid) || []
+      ).map((a: Agendamento) =>
+        a.id === agendamentoId
+          ? { ...a, cancelado: true, cancelado_as: new Date().toISOString() }
+          : a
+      );
+      agendamentoStore.setAgendamentosForProfissional(
+        pid,
+        updatedLocal as Agendamento[]
+      );
+      cache.value.clear();
+      loadAgendamentosForWeek();
+      toast.success("Agendamento marcado como cancelado (local)");
+      isModalOpen.value = false;
+      isEdicao.value = false;
+      selectedAgendamento.value = null;
+      return;
+    }
+  } catch (e) {
+    console.error("Erro ao cancelar agendamento:", e);
+    toast.error("Erro ao cancelar agendamento");
+  }
+};
+
+// Deleta um agendamento no backend e atualiza a store local
+const handleDeleteAgendamento = async (agendamentoId: number) => {
+  if (!profissionalId.value) {
+    toast.error("Profissional não definido");
+    return;
+  }
+
+  try {
+    // chama composable
+    const deletedId = await deletarAgendamento(agendamentoId);
+
+    // remove da store local
+    const pid = profissionalId.value!;
+    const current = agendamentoStore.getAgendamentosForProfissional(pid) || [];
+    const updated = (current as Agendamento[]).filter(
+      (a) => a.id !== deletedId
     );
     agendamentoStore.setAgendamentosForProfissional(
       pid,
       updated as Agendamento[]
     );
 
-    // atualiza view da semana
+    cache.value.clear();
     loadAgendamentosForWeek();
-    toast.success("Agendamento marcado como cancelado (local)");
+    toast.success("Agendamento excluído");
     isModalOpen.value = false;
     isEdicao.value = false;
     selectedAgendamento.value = null;
-  } catch (e) {
-    console.error("Erro ao cancelar agendamento localmente:", e);
-    toast.error("Erro ao cancelar agendamento");
+    return;
+  } catch (err: any) {
+    if (err && err.code === "NO_ROWS_DELETED") {
+      console.error("Deleção bloqueada por RLS/nenhuma linha deletada:", err);
+      toast.error(
+        "Permissão negada ao deletar agendamento. Verifique políticas RLS ou se o registro ainda existe."
+      );
+      return;
+    }
+
+    // fallback: remove localmente para manter UX (marque que sync falhou)
+    try {
+      const pid = profissionalId.value!;
+      const current =
+        agendamentoStore.getAgendamentosForProfissional(pid) || [];
+      const updated = (current as Agendamento[]).filter(
+        (a) => a.id !== agendamentoId
+      );
+      agendamentoStore.setAgendamentosForProfissional(
+        pid,
+        updated as Agendamento[]
+      );
+      cache.value.clear();
+      loadAgendamentosForWeek();
+      toast.success("Agendamento removido localmente (backend indisponível)");
+      isModalOpen.value = false;
+      isEdicao.value = false;
+      selectedAgendamento.value = null;
+      return;
+    } catch (e) {
+      console.error("Erro ao aplicar remoção localmente:", e);
+      toast.error("Erro ao deletar agendamento");
+      return;
+    }
   }
 };
 
@@ -612,4 +749,23 @@ watch(
     loadAgendamentosForWeek();
   }
 );
+
+const handleSelectProfissional = (profissional: ProfissionalRPC) => {
+  userStore.profissional = profissional;
+  isProfissionaisModalOpen.value = false;
+  // Fetch new agendamentos for the selected professional
+  if (profissional.id_do_profissional) {
+    fetchAllAgendamentosByProfissional(profissional.id_do_profissional)
+      .then(() => {
+        loadAgendamentosForWeek();
+      })
+      .catch((error: unknown) => {
+        console.error(
+          "Erro ao buscar agendamentos do profissional selecionado:",
+          error
+        );
+        toast.error("Erro ao carregar agendamentos do profissional");
+      });
+  }
+};
 </script>

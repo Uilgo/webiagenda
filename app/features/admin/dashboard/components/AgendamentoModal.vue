@@ -250,7 +250,7 @@
           <Button
             type="button"
             variant="destructive"
-            @click="() => emit('cancel-agendamento', props.initialAgendamento!.id)"
+            @click="showConfirmCancel = true"
           >
             Cancelar Agendamento
           </Button>
@@ -281,6 +281,38 @@
             Salvar Agendamento
           </Button>
         </template>
+      </div>
+    </template>
+  </Modal>
+
+  <!-- Modal de Confirmação de Cancelamento -->
+  <Modal
+    v-model="showConfirmCancel"
+    title="Confirmar Cancelamento"
+    :show-close="true"
+  >
+    <div class="p-4 text-center">
+      <p class="text-sm text-muted-foreground mb-4">
+        Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.
+      </p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end space-x-3">
+        <Button
+          type="button"
+          variant="outline"
+          @click="showConfirmCancel = false"
+        >
+          Não, Manter
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          @click="handleConfirmCancel"
+        >
+          Sim, Cancelar
+        </Button>
       </div>
     </template>
   </Modal>
@@ -362,6 +394,13 @@ const toast = useToast();
 const { editarAgendamento } = useAgendamento();
 const saving = ref(false);
 
+const showConfirmCancel = ref(false);
+
+const handleConfirmCancel = () => {
+  emit('cancel-agendamento', props.initialAgendamento!.id);
+  showConfirmCancel.value = false;
+};
+
 // Wrapper para o ColorPicker que mantém selectedColor como string|null
 const colorModel = computed<string>({
   get: () => selectedColor.value ?? "",
@@ -383,6 +422,7 @@ watch(
       titulo.value = "";
       descricao.value = "";
       selectedColor.value = "";
+      showConfirmCancel.value = false;
     }
   }
 );

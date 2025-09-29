@@ -63,6 +63,80 @@ export const useAgendamento = () => {
   };
 
   /**
+   * Deleta um agendamento pelo ID.
+   * Retorna o ID deletado ou lança erro com código NO_ROWS_DELETED quando
+   * nenhuma linha foi afetada (possível RLS / permissões).
+   */
+  const deletarAgendamento = async (id: number): Promise<number> => {
+    const { data, error } = await (supabase as any)
+      .from("agendamentos")
+      .delete()
+      .eq("id", id)
+      .select("id");
+
+    if (error) {
+      console.error("Erro ao deletar agendamento:", error);
+      throw error;
+    }
+
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      const err: any = new Error(
+        "Nenhum registro deletado no servidor. Verifique se o agendamento existe e se as políticas RLS permitem DELETE para este usuário."
+      );
+      err.code = "NO_ROWS_DELETED";
+      throw err;
+    }
+
+    const returned = Array.isArray(data) ? (data as any)[0] : data;
+    return returned.id as number;
+  };
+
+  /**
+   * Marca um agendamento como cancelado (cancelado = true) e seta cancelado_as para timestamp atual.
+   * Retorna o agendamento atualizado.
+   */
+  const cancelarAgendamento = async (id: number): Promise<Agendamento> => {
+    // Cria o timestamp no formato ISO local sem offset para salvar horário local diretamente
+    const now = new Date();
+    
+    // Formata manualmente o horário local de Brasília
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    
+    // Formato ISO 8601 sem offset (horário local salvo diretamente no banco)
+    const localTimestamp = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
+    const { data, error } = await (supabase as any)
+      .from("agendamentos")
+      .update({
+        cancelado: true,
+        cancelado_as: localTimestamp,
+      })
+      .eq("id", id)
+      .select("*");
+
+    if (error) {
+      console.error("Erro ao cancelar agendamento:", error);
+      throw error;
+    }
+
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      const err: any = new Error(
+        "Nenhum registro atualizado no servidor. Verifique se o agendamento existe e se as políticas RLS permitem UPDATE para este usuário."
+      );
+      err.code = "NO_ROWS_UPDATED";
+      throw err;
+    }
+
+    const returned = Array.isArray(data) ? (data as any)[0] : data;
+    return returned as Agendamento;
+  };
+
+  /**
    * Busca todos os agendamentos para um profissional específico, excluindo cancelados.
    * @param profissionalId - ID do profissional para filtrar os agendamentos.
    * @returns Array de agendamentos ou erro se a consulta falhar.
@@ -225,5 +299,7 @@ export const useAgendamento = () => {
     fetchAllAgendamentosByProfissional,
     inserirAgendamento,
     editarAgendamento,
+    deletarAgendamento,
+    cancelarAgendamento,
   };
 };

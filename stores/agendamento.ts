@@ -62,6 +62,10 @@ export const useAgendamentoStore = defineStore("agendamento", () => {
     const v = agendamentosByProfissional.value[profissionalId];
     return Array.isArray(v) && v.length > 0;
   };
+  
+  const clearAgendamentos = () => {
+    agendamentosByProfissional.value = {};
+  };
 
   return {
     dataReferencia,
@@ -73,5 +77,6 @@ export const useAgendamentoStore = defineStore("agendamento", () => {
     setAgendamentosForProfissional,
     getAgendamentosForProfissional,
     hasAgendamentosForProfissional,
+    clearAgendamentos,
   };
 });
