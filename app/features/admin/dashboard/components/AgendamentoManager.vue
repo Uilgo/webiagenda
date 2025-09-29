@@ -4,7 +4,7 @@
     <div class="header flex flex-col gap-4 sticky top-0 z-20 bg-background">
       <div class="flex items-center justify-between">
         <SemanaControlador />
-        <UserProfileDisplay @open-modal="isProfissionaisModalOpen = true" />
+        <UserProfileDisplay @select="handleSelectProfissional" />
         <Button variant="primary" size="md" @click="isModalOpen = true"
           >Novo Agendamento</Button
         >
@@ -39,10 +39,6 @@
     :is-edicao="isEdicao"
     :initial-agendamento="selectedAgendamento"
   />
-  <ProfissionaisModal
-    v-model="isProfissionaisModalOpen"
-    @select="handleSelectProfissional"
-  />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch, computed, nextTick } from "vue";
@@ -63,7 +59,6 @@ import ListaDias from "./ListaDias.vue";
 import ReguaHorarios from "./ReguaHorarios.vue";
 import ItemAgendamento from "./ItemAgendamento.vue";
 import AgendamentoModal from "./AgendamentoModal.vue";
-import ProfissionaisModal from "./ProfissionaisModal.vue";
 
 import { useClientes } from "../../../../composables/core/useClientes";
 
@@ -84,7 +79,6 @@ const isModalOpen = ref(false);
 const isEdicao = ref(false);
 const selectedAgendamento = ref<any | null>(null);
 const allAgendamentos = ref<Agendamento[]>([]);
-const isProfissionaisModalOpen = ref(false);
 // fullAgendamentos lido preferencialmente da store (pode ser hidratado no SSR)
 const fullAgendamentosComputed = computed<Agendamento[]>(() => {
   // Prioridade: userStore.profissional -> store.agendamentosByProfissional
@@ -752,7 +746,6 @@ watch(
 
 const handleSelectProfissional = (profissional: ProfissionalRPC) => {
   userStore.profissional = profissional;
-  isProfissionaisModalOpen.value = false;
   // Fetch new agendamentos for the selected professional
   if (profissional.id_do_profissional) {
     fetchAllAgendamentosByProfissional(profissional.id_do_profissional)
