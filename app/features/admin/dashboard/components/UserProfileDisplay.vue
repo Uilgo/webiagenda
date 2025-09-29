@@ -12,22 +12,22 @@
       <template #trigger="{ isOpen: dropdownOpen }">
         <div class="w-full">
           <div
-            v-if="currentProfissional"
+            v-if="userStore.profissional"
             class="flex items-center gap-3 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors w-full"
           >
             <div
               class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
             >
               <span class="text-blue-600 font-semibold text-xs">
-                {{ currentProfissional.nome_do_profissional?.charAt(0) || "P" }}
+                {{ userStore.profissional.nome_do_profissional?.charAt(0) || "P" }}
               </span>
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-semibold text-gray-900 truncate">
-                {{ currentProfissional.nome_do_profissional }}
+                {{ userStore.profissional.nome_do_profissional }}
               </h3>
               <p class="text-sm text-gray-600 truncate">
-                {{ currentProfissional.especialidade_do_profissional }}
+                {{ userStore.profissional.especialidade_do_profissional }}
               </p>
             </div>
             <ChevronDownIcon
@@ -74,7 +74,9 @@
                 profissional.id_do_perfil ||
                 'default'
               "
-              :label="profissional.nome_do_profissional || 'Nome não disponível'"
+              :label="
+                profissional.nome_do_profissional || 'Nome não disponível'
+              "
               @click="handleSelect(profissional, close)"
             >
               <template #icon>
@@ -116,61 +118,35 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const isDropdownOpen = ref(false);
-const { profissionais, fetchProfissionais, isFetching } = useProfissionais();
+const { fetchProfissionais, isFetching } = useProfissionais();
 const userStore = useUserStore();
 
 const searchQuery = ref("");
 
-const currentProfissional = ref<ProfissionalRPC | null>(null);
-
 const filteredProfissionais = computed(() => {
   if (!searchQuery.value.trim()) {
-    return profissionais.value;
+    return userStore.profissionais;
   }
   const query = searchQuery.value.toLowerCase();
-  return profissionais.value.filter(
+  return userStore.profissionais.filter(
     (profissional) =>
       profissional.nome_do_profissional?.toLowerCase().includes(query) ||
       profissional.especialidade_do_profissional?.toLowerCase().includes(query)
   );
 });
 
-const loadCurrentProfissional = async () => {
-  // Prioriza profissional do userStore se definido
-  if (userStore.profissional) {
-    currentProfissional.value = userStore.profissional;
-    return;
-  }
-
-  if (profissionais.value.length === 0) {
-    await fetchProfissionais(true);
-  }
-
-  const profileId = userStore.profile?.id;
-  if (profileId) {
-    currentProfissional.value =
-      profissionais.value.find(
-        (p: ProfissionalRPC) => p.id_do_perfil === profileId
-      ) || null;
-  }
-};
-
-watch(
-  () => userStore.profissional,
-  () => {
-    loadCurrentProfissional();
-  }
-);
-
+// Carrega profissionais se não estiverem no store (para o dropdown)
 onMounted(async () => {
-  await loadCurrentProfissional();
+  if (userStore.profissionais.length === 0) {
+    await fetchProfissionais();
+  }
 });
 
 const handleSelect = (
   profissional: ProfissionalRPC,
   closeDropdown: () => void
 ) => {
-  currentProfissional.value = profissional;
+  userStore.setProfissional(profissional);
   emit("select", profissional);
   closeDropdown();
   searchQuery.value = "";
