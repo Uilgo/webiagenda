@@ -12,7 +12,7 @@
       <template #trigger="{ isOpen: dropdownOpen }">
         <div class="w-full">
           <div
-            v-if="userStore.profissional"
+            v-if="userStore.profissional && isLoaded"
             class="flex items-center gap-3 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors w-full"
           >
             <div
@@ -38,7 +38,7 @@
             />
           </div>
           <div
-            v-else-if="userStore.profissionais.length > 0"
+            v-else-if="isLoaded && userStore.profissionais.length > 0"
             class="flex items-center justify-center p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 w-full"
           >
             Nenhum profissional selecionado
@@ -130,6 +130,52 @@ const { fetchProfissionais, isFetching } = useProfissionais();
 const userStore = useUserStore();
 
 const searchQuery = ref("");
+const isLoaded = ref(false); // Flag para controlar quando o estado inicial foi carregado
+
+// Função para obter o profissional salvo no localStorage
+const getSavedProfissional = (): ProfissionalRPC | null => {
+  const savedId = localStorage.getItem("selectedProfissionalId");
+  if (savedId) {
+    const id = parseInt(savedId, 10);
+    const found = userStore.profissionais.find(
+      (p) => p.id_do_profissional === id
+    );
+    return found || null;
+  }
+  return null;
+};
+
+// Função para carregar o estado inicial de forma síncrona
+const loadInitialState = async () => {
+  // Primeiro, tentamos obter o profissional salvo do localStorage
+  const savedProf = getSavedProfissional();
+  
+  if (savedProf) {
+    // Se houver um profissional salvo, definimo-lo imediatamente
+    userStore.setProfissional(savedProf);
+  } else if (userStore.profissionais.length === 0) {
+    // Se não houver profissionais carregados, buscamos do servidor
+    await fetchProfissionais();
+    
+    // Após carregar, verificamos se algum profissional foi automaticamente definido
+    // ou definimos o primeiro se for apropriado
+    if (!userStore.profissional && userStore.profissionais.length > 0) {
+      const firstProf = userStore.profissionais[0];
+      if (firstProf) {
+        userStore.setProfissional(firstProf);
+      }
+    }
+  } else if (!userStore.profissional) {
+    // Se já temos profissionais carregados mas nenhum está selecionado, 
+    // definimos o primeiro
+    const firstProf = userStore.profissionais[0];
+    if (firstProf) {
+      userStore.setProfissional(firstProf);
+    }
+  }
+  
+  isLoaded.value = true;
+};
 
 const filteredProfissionais = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -143,28 +189,18 @@ const filteredProfissionais = computed(() => {
   );
 });
 
-// Carrega profissionais se não estiverem no store (para o dropdown)
-onMounted(async () => {
-  if (userStore.profissionais.length === 0) {
-    await fetchProfissionais();
-  }
-  const savedId = localStorage.getItem("selectedProfissionalId");
-  if (savedId) {
-    const id = parseInt(savedId, 10);
-    const savedProf = userStore.profissionais.find(
-      (p) => p.id_do_profissional === id
-    );
-    if (savedProf) {
-      userStore.setProfissional(savedProf);
-    }
-  }
+// Carrega o estado inicial de forma síncrona
+onMounted(() => {
+  loadInitialState();
 });
 
 const handleSelect = (
   profissional: ProfissionalRPC,
   closeDropdown: () => void
 ) => {
+  // Definir o profissional no store para atualizar a UI imediatamente
   userStore.setProfissional(profissional);
+  // Emitir o evento para que o AgendamentoManager atualize os agendamentos
   emit("select", profissional);
   closeDropdown();
   searchQuery.value = "";

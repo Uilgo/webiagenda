@@ -105,6 +105,8 @@ const fullAgendamentosComputed = computed<Agendamento[]>(() => {
 const cache = ref<Map<string, Agendamento[]>>(new Map());
 const profissionalId = ref<number | null>(null);
 const profissionalNome = ref<string>("");
+// Flag para evitar que o watch entre em conflito com o handler
+const isUpdatingProfissional = ref(false);
 
 const openEdit = (ag: any) => {
   selectedAgendamento.value = ag;
@@ -135,6 +137,8 @@ const derivedProfissionalId = computed<number | null>(() => {
   return null;
 });
 
+// Watch para atualizar o profissionalId e nome quando o profissional mudar
+// Atualizamos manualmente profissionalId e profissionalNome quando o profissional muda
 watch(
   derivedProfissionalId,
   (v) => {
@@ -148,6 +152,10 @@ watch(
 );
 
 onMounted(async () => {
+  // Aguarda o carregamento inicial do UserProfileDisplay para garantir 
+  // que o profissional correto seja carregado antes de buscar agendamentos
+  await new Promise(resolve => setTimeout(resolve, 100)); // Pequeno delay para garantir carregamento
+  
   // Se já temos agendamentos hidratados no SSR (fullAgendamentosComputed), usamos direto.
   // Caso contrário, se houver um profissional conhecido, tentamos buscar do Supabase no client.
   const pid = derivedProfissionalId.value;
@@ -700,6 +708,9 @@ const handleUpdateAgendamento = async (payload: {
 };
 
 const loadAgendamentosForWeek = () => {
+  // Se estamos atualizando o profissional, não fazemos nada aqui
+  if (isUpdatingProfissional.value) return;
+  
   const diasSemana = agendamentoStore.diasSemana;
   const full = fullAgendamentosComputed.value;
   if (diasSemana.length === 0 || !full || full.length === 0) {
@@ -740,25 +751,57 @@ watch(
     fullAgendamentosComputed.value.length,
   ],
   () => {
-    loadAgendamentosForWeek();
+    if (!isUpdatingProfissional.value) {  // Apenas atualizar se não estivermos mudando de profissional
+      loadAgendamentosForWeek();
+    }
   }
 );
 
-const handleSelectProfissional = (profissional: ProfissionalRPC) => {
-  userStore.profissional = profissional;
-  // Fetch new agendamentos for the selected professional
+const handleSelectProfissional = async (profissional: ProfissionalRPC) => {
+  // Fetch new agendamentos for the selected professional first
   if (profissional.id_do_profissional) {
-    fetchAllAgendamentosByProfissional(profissional.id_do_profissional)
-      .then(() => {
-        loadAgendamentosForWeek();
-      })
-      .catch((error: unknown) => {
-        console.error(
-          "Erro ao buscar agendamentos do profissional selecionado:",
-          error
-        );
-        toast.error("Erro ao carregar agendamentos do profissional");
-      });
+    try {
+      // Indicar que estamos atualizando o profissional para evitar conflito com o watch
+      isUpdatingProfissional.value = true;
+      
+      // Buscar agendamentos do novo profissional
+      const agendamentos = await fetchAllAgendamentosByProfissional(profissional.id_do_profissional);
+      
+      // Atualizar a store com os novos agendamentos ANTES de definir o profissional
+      agendamentoStore.setAgendamentosForProfissional(profissional.id_do_profissional, agendamentos);
+      
+      // Definir o profissional após os agendamentos estarem na store
+      userStore.setProfissional(profissional);
+      
+      // Forçar uma atualização imediata dos agendamentos exibidos
+      const diasSemana = agendamentoStore.diasSemana;
+      const full = agendamentoStore.getAgendamentosForProfissional(profissional.id_do_profissional) || [];
+      
+      if (diasSemana.length === 0 || !full || full.length === 0) {
+        allAgendamentos.value = [];
+      } else {
+        const start = diasSemana[0]!;
+        const end = diasSemana[6]!;
+        const startStr = formatLocalDate(start);
+        const endStr = formatLocalDate(end);
+        const data = full.filter((ag) => {
+          return ag.data && ag.data >= startStr && ag.data <= endStr;
+        });
+
+        allAgendamentos.value = data;
+      }
+      
+      // Liberar a flag de atualização
+      isUpdatingProfissional.value = false;
+    } catch (error: unknown) {
+      console.error(
+        "Erro ao buscar agendamentos do profissional selecionado:",
+        error
+      );
+      toast.error("Erro ao carregar agendamentos do profissional");
+      // Liberar a flag de atualização em caso de erro também
+      isUpdatingProfissional.value = false;
+    }
   }
 };
 </script>
