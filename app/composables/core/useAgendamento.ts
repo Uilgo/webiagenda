@@ -1,4 +1,4 @@
-import type { Agendamento } from "../../../shared/types/database";
+import type { Agendamento, ViewAgendamento } from "../../../shared/types/database";
 import { useSupabaseClient } from "#imports";
 import { useAgendamentoStore } from "../../../stores/agendamento";
 
@@ -294,6 +294,27 @@ export const useAgendamento = () => {
     return returned as Agendamento;
   };
 
+  /**
+   * Busca o relatório de agendamentos usando a função RPC fn_view_agendamentos.
+   * A função RPC retorna os mesmos dados da view, mas contornando restrições de RLS.
+   * @returns Array de ViewAgendamento com todos os dados do relatório.
+   */
+  const fetchRelatorioAgendamentos = async (): Promise<ViewAgendamento[]> => {
+    console.log('Chamando RPC fn_view_agendamentos sem filtros');
+    
+    // Buscar todos os dados sem filtros
+    const { data: allData, error: fetchError } = await supabase.rpc('fn_view_agendamentos');
+
+    if (fetchError) {
+      console.error("Erro ao buscar relatório de agendamentos via RPC:", fetchError);
+      throw fetchError;
+    }
+
+    console.log('Dados recebidos da RPC:', allData);
+    
+    return allData as ViewAgendamento[];
+  };
+
   return {
     fetchAgendamentosByProfissional,
     fetchAllAgendamentosByProfissional,
@@ -301,5 +322,6 @@ export const useAgendamento = () => {
     editarAgendamento,
     deletarAgendamento,
     cancelarAgendamento,
-  };
+    fetchRelatorioAgendamentos,
+  } as const;
 };

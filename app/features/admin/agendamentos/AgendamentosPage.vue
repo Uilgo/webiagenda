@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import ListaAgendamentos from "./components/ListaAgendamentos.vue";
+</script>
+
 <template>
-  <h1 class="text-2xl font-bold">Agendamentos - Em Desenvolvimento!!</h1>
+  <div class="h-[calc(100vh-128px)] w-full bg-background">
+    <ListaAgendamentos />
+  </div>
 </template>

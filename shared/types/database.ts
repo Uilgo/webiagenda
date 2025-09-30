@@ -27,7 +27,11 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      view_agendamentos: {
+        Row: ViewAgendamento;
+        Insert: never;
+        Update: never;
+      };
     };
     Functions: {
       [_ in never]: never;
@@ -120,4 +124,32 @@ export interface Agendamento {
   cancelado: boolean | null;
   cancelado_as: string | null;
   cor: string | null;
+}
+
+/**
+ * Interface ViewAgendamento que define a estrutura para a view de relatório de agendamentos.
+ * Contém informações detalhadas de agendamento com dados relacionais de cliente e profissional.
+ */
+export interface ViewAgendamento {
+  id: number;
+  created_at: string;
+  updated_at: string | null;
+  user_id: string | null;
+  profissionais_id: number | null;
+  cliente_id: number | null;
+  data: string | null;
+  hora_inicio: string | null;
+  hora_fim: string | null;
+  titulo: string | null;
+  descricao: string | null;
+  cancelado: boolean | null;
+  cancelado_as: string | null;
+  cor: string | null;
+  cliente: string | null;
+  cpf: string | null;
+  telefone: string | null;
+  email: string | null;
+  profissional: string | null;
+  especialidade: string | null;
+  id_da_especialidade: number | null;
 }
