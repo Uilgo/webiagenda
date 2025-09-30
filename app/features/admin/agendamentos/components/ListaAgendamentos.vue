@@ -2,7 +2,12 @@
   <div class="lista-agendamentos flex flex-col h-full bg-background">
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-foreground">Relatório de Agendamentos</h2>
-      <p class="text-muted-foreground">Visualização detalhada dos agendamentos</p>
+      <div class="flex justify-between items-center mt-1">
+        <p class="text-muted-foreground">Visualização detalhada dos agendamentos | ({{ agendamentos.length }} Agendamentos)</p>
+        <Button variant="outline" size="sm" :icon-left="ArrowPathIcon" @click="buscarAgendamentos">
+          Refresh
+        </Button>
+      </div>
     </div>
 
     <!-- Container da tabela -->
@@ -18,7 +23,7 @@
       </div>
 
       <!-- Área de conteúdo scrollável -->
-      <div class="flex-1 overflow-hidden p-2">
+      <div class="flex-1 overflow-hidden p-4">
         <div class="h-full overflow-auto">
           <!-- Loading -->
           <div v-if="loading" class="flex justify-center items-center py-12 bg-card">
@@ -63,6 +68,8 @@ import { useAgendamento } from '../../../../composables/core/useAgendamento';
 import type { ViewAgendamento } from '../../../../../shared/types/database';
 import { useProfissionais } from '../../../../composables/core/useProfissionais';
 import CardAgendamento from './CardAgendamento.vue';
+import Button from '../../../../components/ui/Button.vue';
+import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 
 const { fetchRelatorioAgendamentos } = useAgendamento();
 const { fetchProfissionais, profissionais } = useProfissionais();
