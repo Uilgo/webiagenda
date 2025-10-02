@@ -66,10 +66,12 @@ const pageTitle = computed(() => {
 
   // Mapeamento de rotas para títulos
   const routeMap: Record<string, string> = {
+    '/admin/admin': 'Admin',
     '/admin/dashboard': 'Dashboard',
     '/admin/agendamentos': 'Agendamentos',
     '/admin/clientes': 'Clientes',
     '/admin/especialidades': 'Especialidades',
+    '/admin/perfil': 'Perfil',
     '/admin/profissionais': 'Profissionais'
   }
   

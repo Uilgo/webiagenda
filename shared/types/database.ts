@@ -7,23 +7,25 @@ export type Database = {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Omit<Profile, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Profile, "id" | "created_at" | "updated_at">>;
       };
       especialidades: {
         Row: Especialidades;
-        Insert: Omit<Especialidades, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Especialidades, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Omit<Especialidades, "id" | "created_at" | "updated_at">;
+        Update: Partial<
+          Omit<Especialidades, "id" | "created_at" | "updated_at">
+        >;
       };
       clientes: {
         Row: Cliente;
-        Insert: Omit<Cliente, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Cliente, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Omit<Cliente, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Cliente, "id" | "created_at" | "updated_at">>;
       };
       agendamentos: {
         Row: Agendamento;
-        Insert: Omit<Agendamento, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Agendamento, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Omit<Agendamento, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Agendamento, "id" | "created_at" | "updated_at">>;
       };
     };
     Views: {
@@ -34,7 +36,15 @@ export type Database = {
       };
     };
     Functions: {
-      [_ in never]: never;
+      editar_nome: {
+        Args: {
+          p_nome: string;
+        };
+        Returns: {
+          success: boolean;
+          message: string;
+        };
+      };
     };
     Enums: {
       [_ in never]: never;
@@ -101,7 +111,12 @@ export interface ProfissionalRPC {
  */
 export interface UserProfileRPC {
   id: number;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
   nome: string | null;
+  role: string | null;
+  email: string | null;
 }
 
 /**

@@ -126,8 +126,13 @@
 
             <!-- Formulário de Esqueceu Senha -->
             <div v-else-if="currentForm === 'forgot-password'" key="forgot-password">
-              <ForgotForm 
+              <ForgotForm
+                :loading="forgotLoading"
+                :email-sent="forgotEmailSent"
+                :general-error="forgotGeneralError"
+                :resend-loading="forgotResendLoading"
                 @submit="handleForgotPassword"
+                @resend="handleForgotResend"
                 @back-to-login="switchToForm('login')"
               />
             </div>
@@ -150,6 +155,7 @@ import {
 // Importação dos composables
 import { useAuth } from '../../composables/core/useAuth'
 import { useRouter, useRoute } from '#app'
+import { useToast } from '../../composables/ui/useToast'
 
 // Importação dos componentes
 import ThemeToggle from '../../components/ui/ThemeToggle.vue'
@@ -183,10 +189,17 @@ const route = useRoute()
 const router = useRouter()
 
 // Composable de autenticação
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, forgotPassword } = useAuth()
+const toast = useToast()
 
 // Estado reativo do formulário atual
 const currentForm = ref<AuthFormType>('login')
+
+// Estados para o formulário de recuperação de senha
+const forgotLoading = ref(false)
+const forgotEmailSent = ref(false)
+const forgotGeneralError = ref('')
+const forgotResendLoading = ref(false)
 
 // Flag para controlar initial load e evitar loops
 const isInitialLoad = ref(true)
@@ -260,12 +273,44 @@ const handleSignup = async (data: SignupData) => {
 
 const handleForgotPassword = async (data: ForgotPasswordData) => {
   try {
-    // TODO: Implementar lógica de recuperação de senha
-    // await authStore.forgotPassword(data)
-    // Mostrar mensagem de sucesso
+    forgotLoading.value = true
+    forgotGeneralError.value = ''
+
+    const result = await forgotPassword(data.email)
+
+    if (result.success) {
+      forgotEmailSent.value = true
+      toast.success('Email de recuperação enviado com sucesso!')
+    } else {
+      forgotGeneralError.value = result.error || 'Erro ao enviar email de recuperação'
+      toast.error(forgotGeneralError.value)
+    }
   } catch (error) {
     console.error('Erro na recuperação de senha:', error)
-    // TODO: Mostrar toast de erro
+    const errorMsg = 'Erro inesperado. Tente novamente.'
+    forgotGeneralError.value = errorMsg
+    toast.error(errorMsg)
+  } finally {
+    forgotLoading.value = false
+  }
+}
+
+const handleForgotResend = async (email: string) => {
+  try {
+    forgotResendLoading.value = true
+
+    const result = await forgotPassword(email)
+
+    if (result.success) {
+      toast.success('Email reenviado com sucesso!')
+    } else {
+      toast.error(result.error || 'Erro ao reenviar email')
+    }
+  } catch (error) {
+    console.error('Erro ao reenviar:', error)
+    toast.error('Erro ao reenviar email. Tente novamente.')
+  } finally {
+    forgotResendLoading.value = false
   }
 }
 </script>

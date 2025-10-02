@@ -162,6 +162,7 @@ import {
   ClipboardDocumentListIcon,
   UsersIcon,
   UserGroupIcon,
+  Cog6ToothIcon,
   EllipsisVerticalIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
@@ -229,33 +230,45 @@ interface MenuItem {
 }
 
 // Itens do menu de navegação
-const menuItems: MenuItem[] = [
-  {
-    name: "Dashboard",
-    path: "/admin/dashboard",
-    icon: "dashboard",
-  },
-  {
-    name: "Especialidades",
-    path: "/admin/especialidades",
-    icon: "specialties",
-  },
-  {
-    name: "Agendamentos",
-    path: "/admin/agendamentos",
-    icon: "appointments",
-  },
-  {
-    name: "Clientes",
-    path: "/admin/clientes",
-    icon: "clients",
-  },
-  {
-    name: "Profissionais",
-    path: "/admin/profissionais",
-    icon: "professionals",
-  },
-];
+const menuItems = computed(() => {
+  const baseItems: MenuItem[] = [
+    {
+      name: "Dashboard",
+      path: "/admin/dashboard",
+      icon: "dashboard",
+    },
+    {
+      name: "Especialidades",
+      path: "/admin/especialidades",
+      icon: "specialties",
+    },
+    {
+      name: "Agendamentos",
+      path: "/admin/agendamentos",
+      icon: "appointments",
+    },
+    {
+      name: "Clientes",
+      path: "/admin/clientes",
+      icon: "clients",
+    },
+    {
+      name: "Profissionais",
+      path: "/admin/profissionais",
+      icon: "professionals",
+    },
+  ];
+
+  if (store.profile?.role === 'admin') {
+    baseItems.push({
+      name: "Admin",
+      path: "/admin/admin",
+      icon: "admin",
+    });
+  }
+
+  return baseItems;
+});
 
 // Mapeamento de ícones do Heroicons
 const iconMap = {
@@ -264,6 +277,7 @@ const iconMap = {
   appointments: ClipboardDocumentListIcon,
   clients: UsersIcon,
   professionals: UserGroupIcon,
+  admin: Cog6ToothIcon,
 };
 
 // Função para obter o ícone correto
@@ -361,7 +375,7 @@ const getUserInitials = (name?: string | null): string => {
 const handleProfileClick = async (closeDropdown: () => void) => {
   closeDropdown();
   if (!store.user) return; // evita navegação quando não autenticado
-  await router.push("/admin/profile");
+  await router.push("/admin/perfil");
 };
 
 const handleLogoutClick = async (closeDropdown: () => void) => {

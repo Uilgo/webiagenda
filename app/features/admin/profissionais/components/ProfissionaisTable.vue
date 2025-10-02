@@ -1,6 +1,6 @@
 <template>
   <div
-    class="overflow-x-auto border border-border shadow-sm h-[calc(100vh-12rem)] overflow-y-auto"
+    class="overflow-x-auto border border-border rounded-lg shadow-sm h-[calc(100vh-12rem)] overflow-y-auto"
   >
     <table class="min-w-full divide-y divide-border">
       <thead class="bg-muted">

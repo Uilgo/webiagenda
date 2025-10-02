@@ -1,5 +1,5 @@
 /* Importação da fonte Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -113,7 +113,7 @@
     .Vue-Toastification__container {
       @apply left-4 right-4 top-4;
     }
-    
+
     .Vue-Toastification__toast {
       @apply text-xs p-3 min-h-[56px];
     }
@@ -189,19 +189,19 @@
     /* Cores base - Light mode */
     --color-background: 0 0% 100%;
     --color-foreground: 222 84% 5%;
-    
+
     --color-card: 0 0% 100%;
     --color-card-foreground: 222 84% 5%;
-    
+
     --color-popover: 0 0% 100%;
     --color-popover-foreground: 222 84% 5%;
-    
+
     --color-muted: 210 40% 98%;
     --color-muted-foreground: 215 16% 47%;
-    
+
     --color-accent: 210 40% 98%;
     --color-accent-foreground: 222 84% 5%;
-    
+
     --color-border: 214 32% 91%;
     --color-input: 214 32% 91%;
     --color-ring: 217 91% 60%;
@@ -209,25 +209,28 @@
     /* Estados - Light mode */
     --color-destructive: 0 84% 60%;
     --color-destructive-foreground: 210 40% 98%;
-    
+
     --color-warning: 38 92% 50%;
     --color-warning-foreground: 48 96% 89%;
-    
+
     --color-success: 142 69% 45%;
     --color-success-foreground: 140 84% 92%;
-    
+
     --color-info: 217 91% 60%;
     --color-info-foreground: 214 100% 97%;
 
     /* Variáveis do design system */
     --radius: 0.75rem;
-    
+
     /* Sombras - Light mode */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
     --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
   }
@@ -275,19 +278,19 @@
     /* Cores base - Dark mode */
     --color-background: 222 84% 5%;
     --color-foreground: 210 40% 98%;
-    
+
     --color-card: 222 84% 5%;
     --color-card-foreground: 210 40% 98%;
-    
+
     --color-popover: 222 84% 5%;
     --color-popover-foreground: 210 40% 98%;
-    
+
     --color-muted: 217 33% 17%;
     --color-muted-foreground: 215 20% 65%;
-    
+
     --color-accent: 217 33% 17%;
     --color-accent-foreground: 210 40% 98%;
-    
+
     --color-border: 217 33% 17%;
     --color-input: 217 33% 17%;
     --color-ring: 217 91% 60%;
@@ -295,22 +298,25 @@
     /* Estados - Dark mode */
     --color-destructive: 0 63% 31%;
     --color-destructive-foreground: 210 40% 98%;
-    
+
     --color-warning: 38 92% 50%;
     --color-warning-foreground: 48 96% 89%;
-    
+
     --color-success: 142 69% 45%;
     --color-success-foreground: 140 84% 92%;
-    
+
     --color-info: 217 91% 60%;
     --color-info-foreground: 214 100% 97%;
 
     /* Sombras - Dark mode */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4),
+      0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4),
+      0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4),
+      0 8px 10px -6px rgb(0 0 0 / 0.4);
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
     --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.3);
   }
@@ -319,7 +325,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -332,15 +338,15 @@
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-muted;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
   }
@@ -356,67 +362,67 @@
   .schedule-card {
     @apply bg-card text-card-foreground rounded-lg border shadow-sm p-4 transition-all duration-200 hover:shadow-md;
   }
-  
+
   .schedule-slot {
     @apply bg-muted/50 border border-border rounded-md p-2 text-sm transition-all duration-200 hover:bg-muted cursor-pointer;
   }
-  
+
   .schedule-slot-booked {
     @apply bg-primary/10 border-primary/20 text-primary cursor-not-allowed;
   }
-  
+
   .schedule-slot-selected {
     @apply bg-primary text-primary-foreground border-primary;
   }
-  
+
   .schedule-time-label {
     @apply text-xs font-medium text-muted-foreground uppercase tracking-wide;
   }
-  
+
   .schedule-date-header {
     @apply text-lg font-semibold text-foreground;
   }
-  
+
   .btn-primary {
     @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary rounded-md px-4 py-2 font-medium transition-colors duration-200;
   }
-  
+
   .btn-secondary {
     @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary rounded-md px-4 py-2 font-medium transition-colors duration-200;
   }
-  
+
   .btn-outline {
     @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring rounded-md px-4 py-2 font-medium transition-colors duration-200;
   }
-  
+
   .btn-ghost {
     @apply hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring rounded-md px-4 py-2 font-medium transition-colors duration-200;
   }
-  
+
   .btn-destructive {
     @apply bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive rounded-md px-4 py-2 font-medium transition-colors duration-200;
   }
-  
+
   .input-field {
     @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
-  
+
   .calendar-grid {
     @apply grid grid-cols-7 gap-1;
   }
-  
+
   .calendar-day {
     @apply aspect-square flex items-center justify-center text-sm rounded-md transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer;
   }
-  
+
   .calendar-day-selected {
     @apply bg-primary text-primary-foreground;
   }
-  
+
   .calendar-day-today {
     @apply bg-accent text-accent-foreground font-medium;
   }
-  
+
   .calendar-day-disabled {
     @apply text-muted-foreground cursor-not-allowed opacity-50;
   }
@@ -427,11 +433,11 @@
   .animate-in {
     animation: animateIn 0.15s ease-out;
   }
-  
+
   .animate-out {
     animation: animateOut 0.15s ease-in;
   }
-  
+
   @keyframes animateIn {
     from {
       opacity: 0;
@@ -442,7 +448,7 @@
       transform: scale(1) translateY(0);
     }
   }
-  
+
   @keyframes animateOut {
     from {
       opacity: 1;
@@ -453,11 +459,11 @@
       transform: scale(0.95) translateY(-10px);
     }
   }
-  
+
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
   }
-  
+
   .glass-effect {
     @apply bg-background/80 backdrop-blur-sm border border-border/50;
   }
