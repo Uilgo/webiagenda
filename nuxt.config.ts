@@ -2,13 +2,22 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: false },
-  modules: ["@nuxtjs/tailwindcss"],
+  modules: ["@nuxtjs/tailwindcss", "@nuxtjs/supabase", "@pinia/nuxt"],
   css: ["~/assets/css/main.css"],
+
+  // Configuração do Supabase
+  supabase: {
+    redirectOptions: {
+      login: "/auth/section?form=login",
+      callback: "/confirm",
+      exclude: ["/", "/auth/**", "/confirm"],
+    },
+  },
   components: [
     {
-      path: '~/components',
+      path: "~/components",
       pathPrefix: false,
-    }
+    },
   ],
   typescript: {
     strict: true,
@@ -18,18 +27,24 @@ export default defineNuxtConfig({
         module: "esnext",
         moduleResolution: "bundler",
         target: "es2022",
-        lib: ["dom", "dom.iterable", "es2022"]
+        lib: ["dom", "dom.iterable", "es2022"],
       },
     },
   },
-  
+
   // RENDERIZAÇÃO PRINCIPALMENTE NO SERVIDOR
   ssr: true,
-  
+
   // Configuração para SSG (geração estática) - opcional
   nitro: {
     prerender: {
-      routes: ['/']
-    }
-  }
+      routes: ["/"],
+    },
+  },
+
+  app: {
+    head: {
+      title: "WebiAgenda",
+    },
+  },
 });
